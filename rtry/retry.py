@@ -1,8 +1,9 @@
 class retry:
-    def __init__(self, until=None, attempts=1, swallow=Exception):
+    def __init__(self, until=None, attempts=1, swallow=Exception, logger=None):
         self._until = until
         self._attempts = attempts
         self._swallow = swallow
+        self._logger = logger
 
     def __call__(self, fn):
         def wrapped(*args, **kwargs):
@@ -18,6 +19,8 @@ class retry:
                         return result
                     exception = None
                 retried += 1
+                if hasattr(self._logger, '__call__'):
+                    self._logger('Retried {} time(s): {}'.format(retried, fn))
             if exception:
                 raise exception
             return result
