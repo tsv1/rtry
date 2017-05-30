@@ -1,3 +1,6 @@
+from functools import wraps
+
+
 class retry:
     def __init__(self, until=None, attempts=1, swallow=Exception, logger=None):
         self._until = until
@@ -6,6 +9,7 @@ class retry:
         self._logger = logger
 
     def __call__(self, fn):
+        @wraps(fn)
         def wrapped(*args, **kwargs):
             retried = 0
             exception = None
