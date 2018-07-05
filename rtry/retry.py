@@ -21,7 +21,9 @@ class retry:
                 except self._swallow as e:
                     exception = e
                 else:
-                    if (self._until is not None) and not(self._until(result)):
+                    if self._until is None:
+                        return result
+                    elif not(self._until(result)):
                         return result
                     exception = None
                 retried += 1
