@@ -1,5 +1,10 @@
 # rtry
 
+## Installation
+
+```bash
+pip3 install rtry
+```
 
 ## Attempts
 
