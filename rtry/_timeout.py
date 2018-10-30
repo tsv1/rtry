@@ -3,14 +3,14 @@ from functools import wraps
 from typing import Union, Type, Callable
 
 
-class TimeoutError(Exception):
+class CancelledError(Exception):
     pass
 
 
 class timeout:
     def __init__(self,
                  seconds: Union[float, int],
-                 exception: Type[BaseException] = TimeoutError) -> None:
+                 exception: Type[BaseException] = CancelledError) -> None:
         self._seconds = seconds
         self._exception = exception
 

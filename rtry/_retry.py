@@ -2,7 +2,7 @@ import time
 from functools import wraps
 from typing import Optional, Union, Callable, Tuple, Type, Any
 
-from ._timeout import timeout, TimeoutError
+from ._timeout import timeout, CancelledError
 
 
 AttemptValue = int
@@ -44,7 +44,7 @@ class retry:
             while (self._attempts is None) or (retried < self._attempts):
                 try:
                     result = fn(*args, **kwargs)
-                except TimeoutError:
+                except CancelledError:
                     raise
                 except self._swallow as e:
                     exception = e

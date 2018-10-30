@@ -3,7 +3,7 @@ import signal
 from time import sleep
 from unittest.mock import MagicMock, sentinel
 
-from rtry import timeout, TimeoutError
+from rtry import timeout, CancelledError
 
 
 class TestTimeout(unittest.TestCase):
@@ -29,7 +29,7 @@ class TestTimeout(unittest.TestCase):
 
     def test_timeout_with_unexpected_delay(self):
         def fn(): sleep(0.2)
-        with self.assertRaises(TimeoutError):
+        with self.assertRaises(CancelledError):
            timeout(0.1)(fn)()
 
     def test_forwards_args_and_result(self):
@@ -51,7 +51,7 @@ class TestTimeout(unittest.TestCase):
         handler_before = signal.getsignal(signal.SIGALRM)
  
         def fn(): sleep(0.2)
-        with self.assertRaises(TimeoutError):
+        with self.assertRaises(CancelledError):
             timeout(0.1)(fn)()
 
         handler_after = signal.getsignal(signal.SIGALRM)
