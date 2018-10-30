@@ -1,5 +1,9 @@
 # rtry
 
+[![PyPI version shields.io](https://img.shields.io/pypi/v/rtry.svg)](https://pypi.python.org/pypi/rtry/)
+[![Build Status](https://travis-ci.com/nikitanovosibirsk/rtry.svg?branch=master)](https://travis-ci.com/nikitanovosibirsk/rtry)
+[![codecov](https://codecov.io/gh/nikitanovosibirsk/rtry/branch/master/graph/badge.svg)](https://codecov.io/gh/nikitanovosibirsk/rtry)
+
 ## Installation
 
 ```bash
