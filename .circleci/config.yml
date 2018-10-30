@@ -19,4 +19,6 @@ jobs:
             coverage run --source=rtry -m unittest tests
       - run:
           name: upload coverage
-          command: codecov
+          command: |
+            . venv/bin/activate
+            codecov
