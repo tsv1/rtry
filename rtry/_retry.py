@@ -12,6 +12,7 @@ DelayCallable = Callable[[AttemptValue], DelayValue]
 ExceptionType = Type[BaseException]
 LoggerCallable = Callable[[AttemptValue, Any, Callable], Any]
 UntilCallable = Callable[[Any], bool]
+SwallowException = Union[Tuple[ExceptionType, ...], ExceptionType]
 
 
 class retry:
@@ -20,7 +21,7 @@ class retry:
                  attempts: Optional[AttemptValue] = None,
                  timeout: Optional[TimeoutValue] = None,
                  delay: Optional[Union[DelayValue, DelayCallable]] = None,
-                 swallow: Optional[Union[Tuple[ExceptionType, ...], ExceptionType]] = BaseException,
+                 swallow: Optional[SwallowException] = BaseException,
                  logger: Optional[LoggerCallable] = None) -> None:
 
         assert (attempts is not None) or (timeout is not None)
@@ -58,7 +59,9 @@ class retry:
                 if hasattr(self._logger, "__call__"):
                     self._logger(retried, exception or result, fn)
                 if self._delay is not None:
-                    delay = self._delay(retried) if hasattr(self._delay, "__call__") else self._delay
+                    delay = self._delay
+                    if hasattr(self._delay, "__call__"):
+                        delay = self._delay(retried)
                     time.sleep(delay)
             if exception:
                 raise exception
