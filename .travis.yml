@@ -5,3 +5,5 @@ install:
     - pip3 install -r requirements-dev.txt
 script:
     - coverage run --source=rtry -m unittest tests
+after_success:
+    - codecov
