@@ -19,11 +19,15 @@ script:
 after_success:
   - codecov
 
-deploy:
-  provider: pypi
-  twine_version: 1.12.2
-  user: nikitanovosibirsk
-  password:
-    secure: FdqOBVj+bBzs939T6NIoxYb2k4IB1EgPMclSXivQ/uYc5zfoNeiu+8466WKPElFOBqlTsIUPTm6ccCnVF0SkqdUrlxVS0LErsef//Xes3QZra54EQMEe3r/s2d/nz5+N63X2VcN/P29mcP0tWVFtR1IxlHDLQAGSYFRTcgxAgbzehEGO7vli3xbzx9pgUUlkjkYwR7wpRGYovMZXE+S4l3oU+GJvW24BIvd0PPoJi5J5KIFOo5TN1qKdCl/CSJekJ4dK/PwfGm3Ba4+dlrnm0yUX/Y6ihizFu7SiYMmwDnIu2PNbktGoiSRum6HCDT33lMUnr7Q5trQgUQy7lKnxhuxWZrMqiwQeubOAgqbjjihBYebxdlylymz7W2VivHKpU0ssfR/sDZb40xY2bSM5ZUXnsiacjlIciKiporfQv2eghStEmJuTwG4nXyFirP9b/De3PY01mkfMDzJXdpR7097cMcoRF4PcDfecdcRq6UfFRhGZV1+C2/2njy6N+ZZ53RX4Y5cSzw7LprGI0shjqP/DL3aDbZrFy6U7UcNwg9LkirGXZBk/OuDasnWlED9Nazha4MXM17HKb+t4m+8QvTOpK+7z2mpPisvGW/qeUIv2ZS3l5rSgeAEjQ+dpwWZnnNwQu8THgCZZnOC0oKplbEDTG/3t7g6o6qACGvw8sAo=
-  on:
-    tags: true
+jobs:
+  include:
+    - stage: pypi deploy
+      python: 3.6
+      deploy:
+        provider: pypi
+        twine_version: 1.12.1
+        user: nikitanovosibirsk
+        password:
+          secure: FdqOBVj+bBzs939T6NIoxYb2k4IB1EgPMclSXivQ/uYc5zfoNeiu+8466WKPElFOBqlTsIUPTm6ccCnVF0SkqdUrlxVS0LErsef//Xes3QZra54EQMEe3r/s2d/nz5+N63X2VcN/P29mcP0tWVFtR1IxlHDLQAGSYFRTcgxAgbzehEGO7vli3xbzx9pgUUlkjkYwR7wpRGYovMZXE+S4l3oU+GJvW24BIvd0PPoJi5J5KIFOo5TN1qKdCl/CSJekJ4dK/PwfGm3Ba4+dlrnm0yUX/Y6ihizFu7SiYMmwDnIu2PNbktGoiSRum6HCDT33lMUnr7Q5trQgUQy7lKnxhuxWZrMqiwQeubOAgqbjjihBYebxdlylymz7W2VivHKpU0ssfR/sDZb40xY2bSM5ZUXnsiacjlIciKiporfQv2eghStEmJuTwG4nXyFirP9b/De3PY01mkfMDzJXdpR7097cMcoRF4PcDfecdcRq6UfFRhGZV1+C2/2njy6N+ZZ53RX4Y5cSzw7LprGI0shjqP/DL3aDbZrFy6U7UcNwg9LkirGXZBk/OuDasnWlED9Nazha4MXM17HKb+t4m+8QvTOpK+7z2mpPisvGW/qeUIv2ZS3l5rSgeAEjQ+dpwWZnnNwQu8THgCZZnOC0oKplbEDTG/3t7g6o6qACGvw8sAo=
+        on:
+          tags: true
