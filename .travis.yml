@@ -26,8 +26,7 @@ jobs:
       deploy:
         provider: pypi
         twine_version: 1.12.1
-        user: nikitanovosibirsk
+        user: "nikitanovosibirsk"
         password:
-          secure: hLlQ39BC3csMNxuic9eb5hYtQwK5DwShjrC5kGhO7G59+5gkMmLUdH7mm/xQykFt+YC2QJEr+g13rplkwYZ1aBzcQ4L0k0ifhsiWMzrCNqSNfjVbntHtR7LKrDAFPhQMrNRyI/RG+Xd+wufALhMiTHB1Ixeq3qmtp3tUlK6nKV/HznCic2nHly6As9KUVaEnVlb2Bf1P2NGtLV/A11n/6ULHEXPdXGezoSNRhS6SHBu2p6oj2xzRhYSbTGG654JQYjriiYU7hFzYfTrVNpmpBXxvrzfqv1NNmBT6+o96YqtiDRLBC8eP8kDv8crPETCo45TAgKyD3jUWkX6D9qKPllIBVOJyGPSmoUpCh2gyfn0oEjUa6FRvyeVRXOwx6wAd2jRLIO2P0gNCj2B/Fp5j42MsPg0XrKcqk8UE7Ka9eaVJeA2vOWQdXlyycHbzpAqCp50S+TDuT5UxnymPvmelMxeoX5eobGUnZI2vOqbwqIC9T9jXlM4b9IqgK3GWcIQSHK97bp8U4uCvJSpTKtWwqjsQ8kwBd+Y85tEsvnhaD7Ws0h+fEt+tv5Ty1hg79Buw4yJbVe5sUSMhEXZNjKD14k+0mVsebJdB+0Zs0aNubQKvEIYg7KOPWZpNqwcpp2DR1SWISWefMba5g0XK2eh90Z+GkB9VNWa5ljvWkZ9QxgA=
-        on:
-          tags: true
+          secure: "uyauYe3+57WXd8ENkqFw+qj+bRjCosoGfHjyKFtUHuCAMcdyCRxEXnbCS/ZppB0LlENbQEzG5vjMq4XJn/V8nfvCEjSXfWuOVpXyYyIOsB/j/Ixoh8o0wBwVpx5mMhkXL0QAsuPlT0V0gohSwSScIJPSHPXZA/N7cTflrvxESwujo6fZ6xq/ouEBTruLlJxAH2CNHGQxXMvhLP95bT8p9dv8kOxup3SWMSn/w8MZlIllST4r64u2qp5tnE90a22I+9QCnmR9XvJD9VkmN32B7i28OBIIpdPo6udmzsCHtoXOxlPwA8fV7D+GkMewg1gDYjw66O8UIafkFdL5QdYUkmui8UkIJR6tyZl8zZPqBqWNF9vFXkIClzn1V4zvkFvmqfm7bKb+O4SM5F6WYenPB/EZo9yIbZX35mqjtJuNVG8+HVmDdNgiBf2EAefdlGfWbh4g/9t/RaRnBQySiLt3Po+k0m8v/XuXV81sMVz0JW4hhXophtcokhGWQxk5I8Ngi8gU48fKxMYXFjgw0ZQ9TtjIls9f5TRUp2yTZI5hkE1PnAelVobvEjYDL6RmwoKXNYYAaaKAzvkyNPMBZNdRzvNteNYi+Y5+ut5R1PPer9Dmvu0q5a/yxnVMHnWojV/9GweY80/zl8Q0eueILj2aY1o+5FZ8OE98euaxzl1qYgU="
+        distributions: "sdist bdist_wheel"
