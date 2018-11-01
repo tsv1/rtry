@@ -31,4 +31,4 @@ jobs:
         password:
           secure: "uyauYe3+57WXd8ENkqFw+qj+bRjCosoGfHjyKFtUHuCAMcdyCRxEXnbCS/ZppB0LlENbQEzG5vjMq4XJn/V8nfvCEjSXfWuOVpXyYyIOsB/j/Ixoh8o0wBwVpx5mMhkXL0QAsuPlT0V0gohSwSScIJPSHPXZA/N7cTflrvxESwujo6fZ6xq/ouEBTruLlJxAH2CNHGQxXMvhLP95bT8p9dv8kOxup3SWMSn/w8MZlIllST4r64u2qp5tnE90a22I+9QCnmR9XvJD9VkmN32B7i28OBIIpdPo6udmzsCHtoXOxlPwA8fV7D+GkMewg1gDYjw66O8UIafkFdL5QdYUkmui8UkIJR6tyZl8zZPqBqWNF9vFXkIClzn1V4zvkFvmqfm7bKb+O4SM5F6WYenPB/EZo9yIbZX35mqjtJuNVG8+HVmDdNgiBf2EAefdlGfWbh4g/9t/RaRnBQySiLt3Po+k0m8v/XuXV81sMVz0JW4hhXophtcokhGWQxk5I8Ngi8gU48fKxMYXFjgw0ZQ9TtjIls9f5TRUp2yTZI5hkE1PnAelVobvEjYDL6RmwoKXNYYAaaKAzvkyNPMBZNdRzvNteNYi+Y5+ut5R1PPer9Dmvu0q5a/yxnVMHnWojV/9GweY80/zl8Q0eueILj2aY1o+5FZ8OE98euaxzl1qYgU="
         on:
-          all_branches: true
+          branch: travis-deploy
