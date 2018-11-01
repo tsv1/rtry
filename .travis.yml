@@ -18,16 +18,3 @@ script:
 
 after_success:
   - codecov
-
-jobs:
-  include:
-    - stage: pypi deploy
-      python: 3.6
-      deploy:
-        provider: pypi
-        twine_version: 1.12.1
-        user: nikitanovosibirsk
-        password:
-          secure: hLlQ39BC3csMNxuic9eb5hYtQwK5DwShjrC5kGhO7G59+5gkMmLUdH7mm/xQykFt+YC2QJEr+g13rplkwYZ1aBzcQ4L0k0ifhsiWMzrCNqSNfjVbntHtR7LKrDAFPhQMrNRyI/RG+Xd+wufALhMiTHB1Ixeq3qmtp3tUlK6nKV/HznCic2nHly6As9KUVaEnVlb2Bf1P2NGtLV/A11n/6ULHEXPdXGezoSNRhS6SHBu2p6oj2xzRhYSbTGG654JQYjriiYU7hFzYfTrVNpmpBXxvrzfqv1NNmBT6+o96YqtiDRLBC8eP8kDv8crPETCo45TAgKyD3jUWkX6D9qKPllIBVOJyGPSmoUpCh2gyfn0oEjUa6FRvyeVRXOwx6wAd2jRLIO2P0gNCj2B/Fp5j42MsPg0XrKcqk8UE7Ka9eaVJeA2vOWQdXlyycHbzpAqCp50S+TDuT5UxnymPvmelMxeoX5eobGUnZI2vOqbwqIC9T9jXlM4b9IqgK3GWcIQSHK97bp8U4uCvJSpTKtWwqjsQ8kwBd+Y85tEsvnhaD7Ws0h+fEt+tv5Ty1hg79Buw4yJbVe5sUSMhEXZNjKD14k+0mVsebJdB+0Zs0aNubQKvEIYg7KOPWZpNqwcpp2DR1SWISWefMba5g0XK2eh90Z+GkB9VNWa5ljvWkZ9QxgA=
-        on:
-          tags: true
