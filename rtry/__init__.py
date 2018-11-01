@@ -3,4 +3,4 @@ from ._timeout import timeout, CancelledError
 
 
 __all__ = ("retry", "timeout", "CancelledError")
-__version__ = "1.0.1"
+__version__ = "1.0.2"
