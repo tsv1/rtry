@@ -1,8 +1,10 @@
 # rtry
 
-[![PyPI version shields.io](https://img.shields.io/pypi/v/rtry.svg)](https://pypi.python.org/pypi/rtry/)
-[![Build Status](https://travis-ci.com/nikitanovosibirsk/rtry.svg?branch=master)](https://travis-ci.com/nikitanovosibirsk/rtry)
-[![codecov](https://codecov.io/gh/nikitanovosibirsk/rtry/branch/master/graph/badge.svg)](https://codecov.io/gh/nikitanovosibirsk/rtry)
+[![License](https://img.shields.io/github/license/nikitanovosibirsk/rtry.svg)](https://github.com/nikitanovosibirsk/rtry)
+[![Travis](https://img.shields.io/travis/com/nikitanovosibirsk/rtry/master.svg)](https://travis-ci.com/nikitanovosibirsk/rtry)
+[![Codecov](https://img.shields.io/codecov/c/github/nikitanovosibirsk/rtry/master.svg)](https://codecov.io/gh/nikitanovosibirsk/rtry)
+[![PyPI](https://img.shields.io/pypi/v/rtry.svg)](https://pypi.python.org/pypi/rtry/)
+[![Python Version](https://img.shields.io/pypi/pyversions/rtry.svg)](https://pypi.python.org/pypi/rtry/)
 
 ## Installation
 
