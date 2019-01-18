@@ -139,7 +139,7 @@ class TestRetry(unittest.TestCase):
         retry(attempts=3)(mock)()
         self.assertEqual(mock.call_count, 2)
 
-    def test_swallow_single_exceptions(self):
+    def test_swallow_single_exception(self):
         mock = MagicMock(side_effect=(KeyError, None))
         retry(attempts=3, swallow=KeyError)(mock)()
         self.assertEqual(mock.call_count, 2)
@@ -158,6 +158,11 @@ class TestRetry(unittest.TestCase):
         with self.assertRaises(ZeroDivisionError):
             retry(attempts=3, swallow=(KeyError, IndexError))(mock)()
         self.assertEqual(mock.call_count, 3)
+
+    def test_swallow_list_exceptions(self):
+        mock = MagicMock(side_effect=(KeyError, None))
+        retry(attempts=3, swallow=[ValueError, KeyError])(mock)()
+        self.assertEqual(mock.call_count, 2)
 
     # Until
 

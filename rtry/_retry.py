@@ -35,6 +35,8 @@ class retry:
         self._timeout = timeout
         self._delay = delay
         self._swallow = () if swallow is None else swallow
+        if isinstance(self._swallow, list):
+            self._swallow = tuple(self._swallow)
         self._logger = logger
 
     def __call__(self, fn: Callable) -> Callable:
