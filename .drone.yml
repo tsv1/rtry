@@ -102,7 +102,6 @@ steps:
   image: pypy:3.6-7.0-slim
   commands:
   - pypy3 setup.py install
-  - pip3 install -r requirements-dev.txt
   - pypy3 -m unittest tests
 
 trigger:
