@@ -1,0 +1,71 @@
+---
+kind: pipeline
+name: python3.6
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: lint
+  image: python:3.6
+  commands:
+  - python3 setup.py install
+  - pip3 install -r requirements-dev.txt
+  - python3 -m mypy rtry --ignore-missing-imports
+  - python3 -m flake8 rtry --max-line-length=99
+
+- name: test
+  image: python:3.6
+  commands:
+  - python3 setup.py install
+  - pip3 install -r requirements-dev.txt
+  - coverage run --source=rtry -m unittest tests
+  - coverage xml -o /tmp/artifacts/coverage.xml
+  volumes:
+  - name: artifacts
+    path: /tmp/artifacts
+
+- name: coverage
+  image: plugins/codecov
+  settings:
+    files:
+    - /tmp/artifacts/coverage.xml
+    required: true
+    token:
+      from_secret: codecov-token
+  volumes:
+  - name: artifacts
+    path: /tmp/artifacts
+
+volumes:
+- name: artifacts
+  temp: {}
+
+trigger:
+  event:
+  - push
+  - tag
+
+---
+kind: pipeline
+name: python3.7
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: test
+  image: python:3.7
+  commands:
+  - python3 setup.py install
+  - pip3 install -r requirements-dev.txt
+  - python3 -m unittest tests
+
+trigger:
+  event:
+  - push
+  - tag
+
+...
