@@ -1,18 +1,18 @@
 from setuptools import setup, find_packages
-import rtry
 
 
 setup(
     name="rtry",
-    version=rtry.__version__,
-    author="Nikita Tsvetkov",
-    author_email="nikitanovosibirsk@yandex.com",
+    version="1.0.3",
     description="The easiest way to retry operations",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
+    author="Nikita Tsvetkov",
+    author_email="nikitanovosibirsk@yandex.com",
+    python_requires=">=3.5.0",
     url="https://github.com/nikitanovosibirsk/rtry",
     license="MIT",
-    packages=find_packages(),
+    packages=find_packages(exclude=("tests",)),
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.5",
