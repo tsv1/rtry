@@ -1,6 +1,6 @@
 import signal
 from functools import wraps
-from typing import Union, Type, Callable
+from typing import Union, Type, Callable, Optional
 
 
 class CancelledError(Exception):
@@ -10,9 +10,11 @@ class CancelledError(Exception):
 class timeout:
     def __init__(self,
                  seconds: Union[float, int],
-                 exception: Type[BaseException] = CancelledError) -> None:
+                 exception: Optional[Type[BaseException]] = CancelledError) -> None:
+        assert exception is None or issubclass(exception, BaseException)
         self._seconds = seconds
-        self._exception = exception
+        self._exception = exception if exception else CancelledError
+        self._silent = exception is None
 
     def _handler(self, signum, frame):
         raise self._exception()
@@ -30,6 +32,10 @@ class timeout:
             signal.setitimer(signal.ITIMER_REAL, self._seconds)
             try:
                 return fn(*args, **kwargs)
+            except self._exception:
+                if not self._silent:
+                    raise
+                pass
             finally:
                 signal.signal(signal.SIGALRM, prev_handler)
         return wrapped

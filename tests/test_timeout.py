@@ -32,6 +32,15 @@ class TestTimeout(unittest.TestCase):
         with self.assertRaises(CancelledError):
            timeout(0.1)(fn)()
 
+    def test_silent_timeout_with_unexpected_delay(self):
+        mock = MagicMock()
+        def fn():
+            mock(1)
+            sleep(0.2)
+            mock(2)
+        timeout(0.1, exception=None)(fn)()
+        mock.assert_called_once_with(1)
+
     def test_forwards_args_and_result(self):
         mock = MagicMock(return_value=sentinel.res)
         res = timeout(0.1)(mock)(sentinel.a, sentinel.b, key1=sentinel.val, key2=None)
