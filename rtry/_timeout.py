@@ -37,5 +37,6 @@ class timeout:
                     raise
                 pass
             finally:
+                signal.alarm(0)
                 signal.signal(signal.SIGALRM, prev_handler)
         return wrapped

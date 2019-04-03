@@ -322,21 +322,21 @@ class TestRetry(unittest.TestCase):
 
     def test_timeout_without_delay(self):
         mock = MagicMock()
-        retry(timeout=0.1)(mock)()
+        retry(timeout=0.01)(mock)()
         self.assertEqual(mock.call_count, 1)
 
     def test_timeout_with_expected_delay(self):
-        mock = MagicMock(side_effect=partial(sleep, 0.1))
+        mock = MagicMock(side_effect=partial(sleep, 0.01))
 
-        retry(timeout=0.3)(mock)()
+        retry(timeout=0.03)(mock)()
 
         self.assertEqual(mock.call_count, 1)
 
     def test_timeout_with_unexpected_delay(self):
-        mock = MagicMock(side_effect=partial(sleep, 0.2))
+        mock = MagicMock(side_effect=partial(sleep, 0.02))
 
         with self.assertRaises(CancelledError):
-            retry(timeout=0.1)(mock)()
+            retry(timeout=0.01)(mock)()
 
         self.assertEqual(mock.call_count, 1)
 
@@ -344,7 +344,7 @@ class TestRetry(unittest.TestCase):
         mock = MagicMock(side_effect=Exception)
 
         with self.assertRaises(CancelledError):
-            retry(timeout=0.1)(mock)()
+            retry(timeout=0.01)(mock)()
 
         self.assertGreater(mock.call_count, 1)
 
@@ -356,7 +356,7 @@ class TestRetry(unittest.TestCase):
         mock = MagicMock()
         mock.side_effect = partial(side_effect, mock)
 
-        res = retry(timeout=0.1)(mock)()
+        res = retry(timeout=0.01)(mock)()
 
         self.assertEqual(mock.call_count, 2)
         self.assertEqual(res, sentinel.res)
@@ -369,7 +369,7 @@ class TestRetry(unittest.TestCase):
         mock = MagicMock()
         mock.side_effect = partial(side_effect, mock)
 
-        res = retry(timeout=0.1)(mock)()
+        res = retry(timeout=0.01)(mock)()
 
         self.assertEqual(mock.call_count, 3)
         self.assertEqual(res, sentinel.res)
@@ -377,7 +377,7 @@ class TestRetry(unittest.TestCase):
     def test_do_not_swallow_timeout_error(self):
         mock = MagicMock(side_effect=Exception)
         with self.assertRaises(CancelledError):
-            retry(timeout=0.1, swallow=(Exception, CancelledError))(mock)()
+            retry(timeout=0.01, swallow=(Exception, CancelledError))(mock)()
         self.assertGreater(mock.call_count, 1)
 
     # Timeout with Attempts
@@ -392,9 +392,9 @@ class TestRetry(unittest.TestCase):
 
     def test_attempts_with_exceeded_timeout(self):
         def side_effect():
-            sleep(0.1)
+            sleep(0.01)
             raise ZeroDivisionError()
         mock = MagicMock(side_effect=side_effect)
 
         with self.assertRaises(CancelledError):
-            retry(attempts=999, timeout=0.3)(mock)()
+            retry(attempts=999, timeout=0.03)(mock)()
