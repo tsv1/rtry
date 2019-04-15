@@ -2,7 +2,11 @@ import time
 from functools import wraps
 from typing import Optional, Union, Callable, Tuple, Type, Any
 
-from ._timeout import timeout, CancelledError
+from ._error import CancelledError
+from ._timeout import Timeout
+
+
+__all__ = ("Retry",)
 
 
 AttemptValue = int
@@ -15,15 +19,16 @@ UntilCallable = Callable[[Any], bool]
 SwallowException = Union[Tuple[ExceptionType, ...], ExceptionType]
 
 
-class retry:
+class Retry:
     def __init__(self, *,
                  until: Optional[UntilCallable] = None,
                  attempts: Optional[AttemptValue] = None,
                  timeout: Optional[TimeoutValue] = None,
                  delay: Optional[Union[DelayValue, DelayCallable]] = None,
                  swallow: Optional[SwallowException] = BaseException,
-                 logger: Optional[LoggerCallable] = None) -> None:
-
+                 logger: Optional[LoggerCallable] = None,
+                 timeout_factory: Optional[Type[Timeout]] = None) -> None:
+        assert timeout_factory is not None
         assert (attempts is not None) or (timeout is not None)
         if attempts is not None:
             assert attempts > 0
@@ -38,6 +43,7 @@ class retry:
         if isinstance(self._swallow, list):
             self._swallow = tuple(self._swallow)
         self._logger = logger
+        self._timeout_factory = timeout_factory
 
     def __call__(self, fn: Callable) -> Callable:
         @wraps(fn)
@@ -68,4 +74,4 @@ class retry:
             if exception:
                 raise exception
             return result
-        return wrapped if self._timeout is None else timeout(self._timeout)(wrapped)
+        return wrapped if self._timeout is None else self._timeout_factory(self._timeout)(wrapped)
