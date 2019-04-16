@@ -12,7 +12,87 @@
 pip3 install rtry
 ```
 
-## Attempts
+## Documentation
+
+* [timeout](#timeout)
+    * [as context manager](#as-context-manager)
+    * [as context manager (silent)](#as-context-manager-silent)
+    * [as decorator](#as-decorator)
+    * [as argument](#as-argument)
+* [retry](#retry)
+    * [attempts](#attempts)
+    * [until](#until)
+    * [logger](#logger)
+    * [delay](#delay)
+    * [swallow](#swallow)
+
+---
+
+## Timeout
+
+##### As context manager
+
+```python
+from rtry import timeout, CancelledError
+
+try:
+    with timeout(3.0):
+        resp = requests.get("https://httpbin.org/status/200")
+except CancelledError:
+    raise
+else:
+    print(resp)
+```
+
+##### As context manager (silent)
+
+```python
+from rtry import timeout, CancelledError
+
+resp = None
+with timeout(3.0, exception=None):
+    resp = requests.get("https://httpbin.org/status/200")
+```
+
+##### As decorator
+
+```python
+from rtry import timeout, CancelledError
+
+@timeout(3.0)
+def fn():
+    resp = requests.get("https://httpbin.org/status/200")
+    return resp
+
+try:
+    resp = fn()
+except CancelledError:
+    raise
+else:
+    print(resp)
+```
+
+##### As argument
+
+```python
+from rtry import retry, CancelledError
+
+@retry(until=lambda r: r.status_code != 200, timeout=3.0)
+def fn():
+    resp = requests.get("https://httpbin.org/status/200")
+    return resp
+
+try:
+    resp = fn()
+except CancelledError:
+    raise
+else:
+    print(resp)
+```
+
+## Retry
+
+### Attempts
 
 ```python
 @retry(attempts=2)
@@ -29,7 +109,7 @@ resp = fn()
 #   AssertionError
 ```
 
-## Until
+### Until
 
 ```python
 @retry(until=lambda r: r.status_code != 200, attempts=2)
@@ -43,7 +123,7 @@ resp = fn()
 # <Response [500]>
 ```
 
-## Logger
+### Logger
 
 ##### Simple logger
 
@@ -74,7 +154,7 @@ resp = fn()
 # INFO:root:Attempt: 2, Result: <Response [500]>
 ```
 
-## Delay
+### Delay
 
 ##### Const delay
 
@@ -108,7 +188,7 @@ print('Elapsed {:.2f}'.format(ended_at - started_at))
 # Elapsed 11.79
 ```
 
-## Swallow
+### Swallow
 
 ##### Fail on first exception
 
@@ -142,38 +222,4 @@ except Exception as e:
     # 1 HTTPConnectionPool(host='127.0.0.1', port=80): Max retries exceeded with url: /status/500
     # 2 HTTPConnectionPool(host='127.0.0.1', port=80): Max retries exceeded with url: /status/500
     # HTTPConnectionPool(host='127.0.0.1', port=80): Max retries exceeded with url: /status/500
-```
-
-## Timeout
-
-##### As argument
-
-```python
-from retry import CancelledError
-
-@retry(until=lambda r: r.status_code != 200, timeout=0.1)
-def fn():
-    resp = requests.get("https://httpbin.org/status/500")
-    return resp
-
-try:
-    resp = fn()
-except CancelledError:
-    pass
-```
-
-##### As decorator
-
-```python
-from retry import timeout, CancelledError
-
-@timeout(0.1)
-def fn():
-    resp = requests.get("https://httpbin.org/status/500")
-    return resp
-
-try:
-    resp = fn()
-except CancelledError:
-    pass
 ```
