@@ -1,7 +1,7 @@
 import unittest
 import signal
 from time import sleep
-from unittest.mock import MagicMock, sentinel
+from unittest.mock import MagicMock, sentinel, call
 
 from rtry import timeout, CancelledError
 
@@ -14,19 +14,23 @@ class TestTimeout(unittest.TestCase):
         self.assertEqual(wrapped.__wrapped__, fn)
 
     def test_no_timeout(self):
-        def fn(): pass
+        def fn():
+            pass
         timeout(0)(fn)()
 
     def test_timeout_without_delay(self):
-        def fn(): pass
+        def fn():
+            pass
         timeout(0.01)(fn)()
 
     def test_timeout_with_expected_delay(self):
-        def fn(): sleep(0.01)
+        def fn():
+            sleep(0.01)
         timeout(0.02)(fn)()
 
     def test_timeout_with_unexpected_delay(self):
-        def fn(): sleep(0.02)
+        def fn():
+            sleep(0.02)
         with self.assertRaises(CancelledError):
            timeout(0.01)(fn)()
 
@@ -50,7 +54,8 @@ class TestTimeout(unittest.TestCase):
             pass
         signal.signal(signal.SIGALRM, handler)
  
-        def fn(): sleep(0.01)
+        def fn():
+            sleep(0.01)
         timeout(0.02)(fn)()
 
         handler_after = signal.getsignal(signal.SIGALRM)
@@ -60,7 +65,7 @@ class TestTimeout(unittest.TestCase):
         def handler():
             pass
         signal.signal(signal.SIGALRM, handler)
- 
+
         def fn():
             sleep(0.02)
         with self.assertRaises(CancelledError):
@@ -76,3 +81,110 @@ class TestTimeout(unittest.TestCase):
         with self.assertRaises(CustomException):
             timeout(0.01, exception=CustomException)(fn)()
 
+    def test_nested_timeout_result(self):
+        @timeout(0.01)
+        def outer():
+            @timeout(0.01)
+            def inner():
+                return sentinel.res
+            return inner()
+
+        self.assertEqual(outer(), sentinel.res)
+
+    def test_nested_timeout_inner_propagation(self):
+        mock = MagicMock()
+
+        @timeout(0.05)
+        def outer():
+            mock(1)
+            @timeout(0.01)
+            def inner():
+                mock(2)
+                sleep(0.03)
+                mock(3)
+            inner()
+            mock(4)
+
+        with self.assertRaises(CancelledError):
+            outer()
+        mock.assert_has_calls([call(1), call(2)])
+        self.assertEqual(mock.call_count, 2)
+
+    def test_nested_timeout_outer_propagation(self):
+        mock = MagicMock()
+
+        @timeout(0.01)
+        def outer():
+            mock(1)
+            @timeout(0.05)
+            def inner():
+                mock(2)
+                sleep(0.03)
+                mock(3)
+            inner()
+            mock(4)
+
+        with self.assertRaises(CancelledError):
+            outer()
+        mock.assert_has_calls([call(1), call(2)])
+        self.assertEqual(mock.call_count, 2)
+
+    def test_nested_timeout_outer_raises(self):
+        mock = MagicMock()
+
+        @timeout(0.03)
+        def outer():
+            mock(1)
+            @timeout(0.07)
+            def inner():
+                mock(2)
+                sleep(0.01)
+                mock(3)
+            inner()
+            mock(4)
+            sleep(0.04)
+            mock(5)
+
+        with self.assertRaises(CancelledError):
+            outer()
+        mock.assert_has_calls([call(1), call(2), call(3), call(4)])
+        self.assertEqual(mock.call_count, 4)
+
+    def test_nested_timeout_outer_raises_inner_silent(self):
+        mock = MagicMock()
+
+        @timeout(0.05)
+        def outer():
+            mock(1)
+            @timeout(0.01, exception=None)
+            def inner():
+                mock(2)
+                sleep(0.03)
+                mock(3)
+            inner()
+            mock(4)
+            sleep(0.05)
+            mock(5)
+
+        with self.assertRaises(CancelledError):
+            outer()
+        mock.assert_has_calls([call(1), call(2), call(4)])
+        self.assertEqual(mock.call_count, 3)
+
+    def test_nested_timeout_raises_with_same_timeout(self):
+        mock = MagicMock()
+
+        @timeout(0.01)
+        def outer():
+            mock(1)
+            @timeout(0.01)
+            def inner():
+                mock(2)
+                sleep(0.03)
+                mock(3)
+            inner()
+            mock(4)
+
+        with self.assertRaises(CancelledError):
+            outer()
+        mock.assert_has_calls([call(1), call(2)])
