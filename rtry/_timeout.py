@@ -1,42 +1,43 @@
-import signal
 from functools import wraps
-from typing import Union, Type, Callable, Optional
+from typing import Union, Type, Optional, Any
+from types import TracebackType
+
+from ._errors import CancelledError
+from ._scheduler import Scheduler, Event
+from ._types import ExceptionType, AnyCallable
 
 
-class CancelledError(Exception):
-    pass
+__all__ = ("Timeout",)
 
 
-class timeout:
-    def __init__(self,
+class Timeout:
+    def __init__(self, scheduler: Scheduler,
                  seconds: Union[float, int],
-                 exception: Optional[Type[BaseException]] = CancelledError) -> None:
-        assert exception is None or issubclass(exception, BaseException)
+                 exception: Optional[ExceptionType] = CancelledError) -> None:
+        assert exception is None or issubclass(exception, CancelledError)
+        self._scheduler = scheduler
         self._seconds = seconds
-        self._exception = exception if exception else CancelledError
+        self._exception = type("_CancelledError", (exception or CancelledError,), {})
         self._silent = exception is None
+        self._event = None  # type: Union[Event, None]
 
-    def _handler(self, signum, frame):
-        raise self._exception()
+    def __enter__(self) -> None:
+        if self._seconds > 0:
+            self._event = self._scheduler.new(self._seconds, self._exception)
+        pass
 
-    def __call__(self, fn: Callable) -> Callable:
-        if self._seconds == 0:
-            return fn
+    def __exit__(self,
+                 exc_type: Optional[Type[BaseException]],
+                 exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> bool:
+        self._scheduler.cancel(self._event)
+        if isinstance(exc_val, self._exception):
+            return self._silent
+        return exc_val is None
 
+    def __call__(self, fn: AnyCallable) -> AnyCallable:
         @wraps(fn)
-        def wrapped(*args, **kwargs):
-            # Python signal handlers are always executed in the main Python thread,
-            # even if the signal was received in another thread.
-            # https://docs.python.org/3/library/signal.html
-            prev_handler = signal.signal(signal.SIGALRM, self._handler)
-            signal.setitimer(signal.ITIMER_REAL, self._seconds)
-            try:
+        def wrapped(*args: Any, **kwargs: Any) -> Any:
+            with self:
                 return fn(*args, **kwargs)
-            except self._exception:
-                if not self._silent:
-                    raise
-                pass
-            finally:
-                signal.alarm(0)
-                signal.signal(signal.SIGALRM, prev_handler)
         return wrapped
