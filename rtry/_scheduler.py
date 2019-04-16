@@ -22,9 +22,11 @@ class Scheduler:
         self._scheduler = sched.scheduler(timefunc, delayfunc)
         self._orig_handler = None  # type: SignalHandler
 
+    def get_remaining(self, event: Event) -> TimeoutValue:
+        return max(0, event.time - self._timefunc())
+
     def _next_event(self) -> TimeoutValue:
-        queue = self._scheduler.queue
-        return max(0, queue[0].time - self._timefunc()) if queue else 0
+        return self.get_remaining(self._scheduler.queue[0]) if self._scheduler.queue else 0
 
     def new(self, seconds: TimeoutValue, exception: ExceptionType) -> Event:
         orig_handler = signal.getsignal(signal.SIGALRM)

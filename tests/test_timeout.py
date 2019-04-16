@@ -3,8 +3,7 @@ import signal
 from time import sleep
 from unittest.mock import Mock, sentinel, call
 
-from rtry import timeout
-from rtry.types import CancelledError
+from rtry import timeout, CancelledError
 
 
 class TestTimeout(unittest.TestCase):

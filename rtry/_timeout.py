@@ -4,10 +4,23 @@ from types import TracebackType
 
 from ._errors import CancelledError
 from ._scheduler import Scheduler, Event
-from ._types import ExceptionType, AnyCallable
+from ._types import ExceptionType, AnyCallable, TimeoutValue
 
 
-__all__ = ("Timeout",)
+__all__ = ("Timeout", "TimeoutProxy",)
+
+
+class TimeoutProxy:
+    def __init__(self, timeout: "Timeout") -> None:
+        self._timeout = timeout
+
+    @property
+    def exception(self) -> Union[ExceptionType, None]:
+        return self._timeout.exception
+
+    @property
+    def remaining(self) -> TimeoutValue:
+        return self._timeout.remaining
 
 
 class Timeout:
@@ -21,10 +34,20 @@ class Timeout:
         self._silent = exception is None
         self._event = None  # type: Union[Event, None]
 
-    def __enter__(self) -> None:
+    @property
+    def exception(self) -> Union[ExceptionType, None]:
+        return self._exception
+
+    @property
+    def remaining(self) -> TimeoutValue:
+        if self._event:
+            return self._scheduler.get_remaining(self._event)
+        return 0
+
+    def __enter__(self) -> TimeoutProxy:
         if self._seconds > 0:
             self._event = self._scheduler.new(self._seconds, self._exception)
-        pass
+        return TimeoutProxy(self)
 
     def __exit__(self,
                  exc_type: Optional[Type[BaseException]],
