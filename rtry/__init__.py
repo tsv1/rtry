@@ -7,7 +7,7 @@ from ._timeout import Timeout
 
 
 __all__ = ("retry", "timeout", "CancelledError",)
-__version__ = "1.0.6"
+__version__ = "1.1.0"
 
 
 _scheduler = Scheduler()
