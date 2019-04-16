@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Union, Type, Callable, Optional, Any
+from typing import Union, Type, Optional, Any
 from types import TracebackType
 
 from ._errors import CancelledError

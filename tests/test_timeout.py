@@ -50,6 +50,16 @@ class TestTimeout(unittest.TestCase):
         fn()
         mock.assert_called_once_with(1)
 
+    def test_nested_silent_timeout_with_exception(self):
+        @timeout(0.05, exception=None)
+        def outer():
+            @timeout(0.01)
+            def inner():
+                sleep(0.03)
+            inner()
+        with self.assertRaises(CancelledError):
+            outer()
+
     def test_forwards_args_and_result(self):
         mock = Mock(return_value=sentinel.res)
         res = timeout(0.01)(mock)(sentinel.a, sentinel.b, key1=sentinel.val, key2=None)
