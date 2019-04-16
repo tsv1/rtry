@@ -2,21 +2,19 @@ import signal
 import sched
 from sched import Event
 from time import monotonic, sleep
-from typing import Union, Type, Callable, Any
+from typing import Union, Callable, Any
 from types import FrameType
-from signal import Signals, Handlers
+
+from ._types import SignalHandler, TimeoutValue, DelayValue, ExceptionType
 
 
 __all__ = ("Scheduler", "Event",)
 
 
-SignalHandler = Union[Callable[[Signals, FrameType], None], int, Handlers, None]
-
-
 class Scheduler:
     def __init__(self,
-                 timefunc: Callable[[], float] = monotonic,
-                 delayfunc: Callable[[float], Any] = sleep,
+                 timefunc: Callable[[], TimeoutValue] = monotonic,
+                 delayfunc: Callable[[DelayValue], Any] = sleep,
                  itimer: int = signal.ITIMER_REAL) -> None:
         self._timefunc = timefunc
         self._delayfunc = delayfunc
@@ -24,11 +22,11 @@ class Scheduler:
         self._scheduler = sched.scheduler(timefunc, delayfunc)
         self._orig_handler = None  # type: SignalHandler
 
-    def _next_event(self) -> float:
+    def _next_event(self) -> TimeoutValue:
         queue = self._scheduler.queue
         return max(0, queue[0].time - self._timefunc()) if queue else 0
 
-    def new(self, seconds: Union[int, float], exception: Type[Exception]) -> Event:
+    def new(self, seconds: TimeoutValue, exception: ExceptionType) -> Event:
         orig_handler = signal.getsignal(signal.SIGALRM)
         if not isinstance(orig_handler, type(self)):
             self._orig_handler = orig_handler

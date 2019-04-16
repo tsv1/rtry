@@ -2,23 +2,23 @@ from functools import wraps
 from typing import Union, Type, Callable, Optional, Any
 from types import TracebackType
 
-from ._error import CancelledError
+from ._errors import CancelledError
 from ._scheduler import Scheduler, Event
+from ._types import ExceptionType, AnyCallable
 
 
 __all__ = ("Timeout",)
 
 
 class Timeout:
-    def __init__(self, seconds: Union[float, int], *,
-                 exception: Optional[Type[BaseException]] = CancelledError,
-                 scheduler: Optional[Scheduler] = None) -> None:
+    def __init__(self, scheduler: Scheduler,
+                 seconds: Union[float, int],
+                 exception: Optional[ExceptionType] = CancelledError) -> None:
         assert exception is None or issubclass(exception, CancelledError)
-        assert scheduler is not None
+        self._scheduler = scheduler
         self._seconds = seconds
         self._exception = type("_CancelledError", (exception or CancelledError,), {})
         self._silent = exception is None
-        self._scheduler = scheduler
         self._event = None  # type: Union[Event, None]
 
     def __enter__(self) -> None:
@@ -35,7 +35,7 @@ class Timeout:
             return self._silent
         return exc_val is None
 
-    def __call__(self, fn: Callable[..., Any]) -> Callable[..., Any]:
+    def __call__(self, fn: AnyCallable) -> AnyCallable:
         @wraps(fn)
         def wrapped(*args: Any, **kwargs: Any) -> Any:
             with self:

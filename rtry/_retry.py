@@ -1,40 +1,32 @@
 import time
 from functools import wraps
-from typing import Optional, Union, Callable, Tuple, Type, Any
+from typing import Optional, Union, Callable, Any
 
-from ._error import CancelledError
+from ._errors import CancelledError
 from ._timeout import Timeout
+from ._types import (AttemptValue, TimeoutValue, DelayValue, DelayCallable,
+                     LoggerCallable, UntilCallable, SwallowException,
+                     AnyCallable)
 
 
 __all__ = ("Retry",)
 
 
-AttemptValue = int
-TimeoutValue = Union[float, int]
-DelayValue = Union[float, int]
-DelayCallable = Callable[[AttemptValue], DelayValue]
-ExceptionType = Type[BaseException]
-LoggerCallable = Callable[[AttemptValue, Any, Callable[..., Any]], Any]
-UntilCallable = Callable[[Any], bool]
-SwallowException = Union[Tuple[ExceptionType, ...], ExceptionType]
-
-
 class Retry:
-    def __init__(self, *,
+    def __init__(self, timeout_factory: Callable[[TimeoutValue], Timeout], *,
                  until: Optional[UntilCallable] = None,
                  attempts: Optional[AttemptValue] = None,
                  timeout: Optional[TimeoutValue] = None,
                  delay: Optional[Union[DelayValue, DelayCallable]] = None,
                  swallow: Optional[SwallowException] = BaseException,
-                 logger: Optional[LoggerCallable] = None,
-                 timeout_factory: Optional[Type[Timeout]] = None) -> None:
+                 logger: Optional[LoggerCallable] = None) -> None:
         assert (attempts is not None) or (timeout is not None)
-        assert timeout_factory is not None
         if attempts is not None:
             assert attempts > 0
         if timeout is not None:
             assert timeout >= 0
 
+        self._timeout_factory = timeout_factory
         self._until = until
         self._attempts = attempts
         self._timeout = timeout
@@ -43,9 +35,8 @@ class Retry:
         if isinstance(self._swallow, list):
             self._swallow = tuple(self._swallow)
         self._logger = logger
-        self._timeout_factory = timeout_factory
 
-    def __call__(self, fn: Callable[..., Any]) -> Callable[..., Any]:
+    def __call__(self, fn: AnyCallable) -> AnyCallable:
         @wraps(fn)
         def wrapped(*args: Any, **kwargs: Any) -> Any:
             retried = 0
