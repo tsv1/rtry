@@ -15,9 +15,7 @@ class TestTimeout(unittest.TestCase):
 
     def test_no_timeout(self):
         def fn(): pass
-        original = timeout(0)(fn)
-        self.assertEqual(original, fn)
-        self.assertFalse(hasattr(original, "__wrapped__"))
+        timeout(0)(fn)()
 
     def test_timeout_without_delay(self):
         def fn(): pass
@@ -48,27 +46,33 @@ class TestTimeout(unittest.TestCase):
         self.assertEqual(res, sentinel.res)
 
     def test_restores_prev_signal_handler_with_expected_delay(self):
-        handler_before = signal.getsignal(signal.SIGALRM)
+        def handler():
+            pass
+        signal.signal(signal.SIGALRM, handler)
  
         def fn(): sleep(0.01)
         timeout(0.02)(fn)()
 
         handler_after = signal.getsignal(signal.SIGALRM)
-        self.assertEqual(handler_after, handler_before)
+        self.assertEqual(handler_after, handler)
 
     def test_restores_prev_signal_handler_with_unexpected_delay(self):
-        handler_before = signal.getsignal(signal.SIGALRM)
+        def handler():
+            pass
+        signal.signal(signal.SIGALRM, handler)
  
-        def fn(): sleep(0.02)
+        def fn():
+            sleep(0.02)
         with self.assertRaises(CancelledError):
             timeout(0.01)(fn)()
 
         handler_after = signal.getsignal(signal.SIGALRM)
-        self.assertEqual(handler_after, handler_before)
+        self.assertEqual(handler_after, handler)
 
     def test_custom_exception(self):
-        class CustomException(Exception): pass
+        class CustomException(CancelledError): pass
         def fn(): sleep(0.02)
 
         with self.assertRaises(CustomException):
-            timeout(0.01, CustomException)(fn)()
+            timeout(0.01, exception=CustomException)(fn)()
+

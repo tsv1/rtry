@@ -14,7 +14,7 @@ TimeoutValue = Union[float, int]
 DelayValue = Union[float, int]
 DelayCallable = Callable[[AttemptValue], DelayValue]
 ExceptionType = Type[BaseException]
-LoggerCallable = Callable[[AttemptValue, Any, Callable], Any]
+LoggerCallable = Callable[[AttemptValue, Any, Callable[..., Any]], Any]
 UntilCallable = Callable[[Any], bool]
 SwallowException = Union[Tuple[ExceptionType, ...], ExceptionType]
 
@@ -28,8 +28,8 @@ class Retry:
                  swallow: Optional[SwallowException] = BaseException,
                  logger: Optional[LoggerCallable] = None,
                  timeout_factory: Optional[Type[Timeout]] = None) -> None:
-        assert timeout_factory is not None
         assert (attempts is not None) or (timeout is not None)
+        assert timeout_factory is not None
         if attempts is not None:
             assert attempts > 0
         if timeout is not None:
@@ -45,9 +45,9 @@ class Retry:
         self._logger = logger
         self._timeout_factory = timeout_factory
 
-    def __call__(self, fn: Callable) -> Callable:
+    def __call__(self, fn: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(fn)
-        def wrapped(*args, **kwargs):
+        def wrapped(*args: Any, **kwargs: Any) -> Any:
             retried = 0
             exception = None
             while (self._attempts is None) or (retried < self._attempts):
@@ -65,12 +65,12 @@ class Retry:
                     exception = None
                 retried += 1
                 if hasattr(self._logger, "__call__"):
-                    self._logger(retried, exception or result, fn)
+                    self._logger(retried, exception or result, fn)  # type: ignore
                 if self._delay is not None:
                     delay = self._delay
                     if hasattr(self._delay, "__call__"):
-                        delay = self._delay(retried)
-                    time.sleep(delay)
+                        delay = self._delay(retried)  # type: ignore
+                    time.sleep(delay)  # type: ignore
             if exception:
                 raise exception
             return result
