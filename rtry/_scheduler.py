@@ -15,8 +15,8 @@ SignalHandler = Union[Callable[[Signals, FrameType], None], int, Handlers, None]
 
 class Scheduler:
     def __init__(self,
-                 timefunc: Callable[..., Any] = monotonic,
-                 delayfunc: Callable[..., Any] = sleep,
+                 timefunc: Callable[[], float] = monotonic,
+                 delayfunc: Callable[[float], Any] = sleep,
                  itimer: int = signal.ITIMER_REAL) -> None:
         self._timefunc = timefunc
         self._delayfunc = delayfunc
@@ -26,9 +26,7 @@ class Scheduler:
 
     def _next_event(self) -> float:
         queue = self._scheduler.queue
-        if queue:
-            return max(0, float(queue[0].time - self._timefunc()))
-        return 0
+        return max(0, queue[0].time - self._timefunc()) if queue else 0
 
     def new(self, seconds: Union[int, float], exception: Type[Exception]) -> Event:
         orig_handler = signal.getsignal(signal.SIGALRM)
@@ -54,7 +52,9 @@ class Scheduler:
 
         if self._scheduler.empty():
             signal.alarm(0)
-            signal.signal(signal.SIGALRM, self._orig_handler)
+            if self._orig_handler:
+                signal.signal(signal.SIGALRM, self._orig_handler)
+            pass
         else:
             signal.setitimer(self._itimer, self._next_event())
 
