@@ -6,7 +6,7 @@ from ._scheduler import Scheduler
 from ._timeout import Timeout
 
 __all__ = ("retry", "timeout", "CancelledError",)
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 
 _scheduler = Scheduler()
 timeout = partial(Timeout, _scheduler)
