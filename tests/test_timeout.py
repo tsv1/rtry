@@ -1,10 +1,10 @@
-import unittest
 import signal
+import unittest
 from time import sleep
-from unittest.mock import Mock, sentinel, call
+from unittest.mock import Mock, call, sentinel
 
-from rtry import timeout
-from rtry.types import CancelledError
+from rtry import CancelledError, timeout
+from rtry.types import TimeoutProxy
 
 
 class TestTimeout(unittest.TestCase):
@@ -38,7 +38,7 @@ class TestTimeout(unittest.TestCase):
         def fn():
             sleep(0.02)
         with self.assertRaises(CancelledError):
-           fn()
+            fn()
 
     def test_silent_timeout_with_unexpected_delay(self):
         mock = Mock()
@@ -66,11 +66,44 @@ class TestTimeout(unittest.TestCase):
         mock.assert_called_once_with(sentinel.a, sentinel.b, key1=sentinel.val, key2=None)
         self.assertEqual(res, sentinel.res)
 
+    def test_timeout_seconds_property(self):
+        seconds = 0.05
+        self.assertEqual(timeout(seconds).seconds, seconds)
+
+    def test_timeout_exception_property(self):
+        exception = timeout(0.05).exception
+        self.assertTrue(issubclass(exception, CancelledError))
+
+    def test_timeout_exception_property_custom(self):
+        class CustomException(CancelledError):
+            pass
+        exception = timeout(0.05, exception=CustomException).exception
+        self.assertTrue(issubclass(exception, CustomException))
+
+    def test_silent_timeout_exception_property(self):
+        exception = timeout(0.05, exception=None).exception
+        self.assertIsNone(exception)
+
+    def test_timeout_remaining_property(self):
+        seconds = 1.0
+        self.assertEqual(timeout(seconds).remaining, seconds)
+
+        t = timeout(seconds)
+        with t:
+            self.assertLess(t.remaining, seconds)
+
+    def test_timeout_remaining_property_after(self):
+        t = timeout(0.01)
+        with t:
+            pass
+        sleep(0.02)
+        self.assertEqual(t.remaining, 0)
+
     def test_restores_prev_signal_handler_with_expected_delay(self):
         def handler():
             pass
         signal.signal(signal.SIGALRM, handler)
- 
+
         @timeout(0.02)
         def fn():
             sleep(0.01)
@@ -251,3 +284,19 @@ class TestTimeout(unittest.TestCase):
             inner()
         with self.assertRaises(ZeroDivisionError):
             outer()
+
+    def test_timeout_proxy(self):
+        with timeout(0.05) as t:
+            self.assertIsInstance(t, TimeoutProxy)
+
+    def test_timeout_proxy_exception_property(self):
+        with timeout(0.05) as t:
+            self.assertTrue(issubclass(t.exception, CancelledError))
+
+    def test_silent_timeout_proxy_exception_property(self):
+        with timeout(0.05, exception=None) as t:
+            self.assertIsNone(t.exception)
+
+    def test_silent_timeout_remaining_property(self):
+        with timeout(1.0) as t:
+            self.assertLess(t.remaining, 1.0)

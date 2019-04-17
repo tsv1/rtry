@@ -12,15 +12,16 @@ steps:
   commands:
   - python3 setup.py install
   - pip3 install -r requirements-dev.txt
-  - python3 -m mypy rtry --ignore-missing-imports --strict
-  - python3 -m flake8 rtry --max-line-length=99
+  - python3 -m mypy rtry --strict
+  - python3 -m isort rtry --recursive --check-only
+  - python3 -m flake8 rtry --statistics
 
 - name: test
   image: python:3.6
   commands:
   - python3 setup.py install
   - pip3 install -r requirements-dev.txt
-  - coverage run --source=rtry -m unittest tests
+  - coverage run -m unittest tests
   - coverage xml -o /tmp/artifacts/coverage.xml
   volumes:
   - name: artifacts
@@ -134,7 +135,7 @@ steps:
     - bdist_wheel
     password:
       from_secret: pypi-secret
-    username: nikitanovosibirsk
+    username: release-bot
   volumes:
   - name: artifacts
     path: /tmp/artifacts

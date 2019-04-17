@@ -1,5 +1,4 @@
-from setuptools import setup, find_packages
-
+from setuptools import find_packages, setup
 
 setup(
     name="rtry",
@@ -18,6 +17,7 @@ setup(
         "codecov==2.0.15",
         "coverage==4.5.3",
         "flake8==3.7.7",
+        "isort==4.3.17",
         "mypy==0.670",
     ],
     classifiers=[

@@ -1,13 +1,19 @@
 import time
 from functools import wraps
-from typing import Optional, Union, Callable, Any
+from typing import Any, Callable, Optional, Union
 
 from ._errors import CancelledError
 from ._timeout import Timeout
-from ._types import (AttemptValue, TimeoutValue, DelayValue, DelayCallable,
-                     LoggerCallable, UntilCallable, SwallowException,
-                     AnyCallable)
-
+from ._types import (
+    AnyCallable,
+    AttemptValue,
+    DelayCallable,
+    DelayValue,
+    LoggerCallable,
+    SwallowException,
+    TimeoutValue,
+    UntilCallable,
+)
 
 __all__ = ("Retry",)
 

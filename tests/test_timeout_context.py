@@ -1,10 +1,10 @@
-import unittest
 import signal
+import unittest
 from time import sleep
-from unittest.mock import Mock, sentinel, call
+from unittest.mock import Mock, call
 
-from rtry import timeout
-from rtry.types import CancelledError
+from rtry import CancelledError, timeout
+from rtry.types import TimeoutProxy
 
 
 class TestTimeoutContext(unittest.TestCase):
@@ -40,7 +40,7 @@ class TestTimeoutContext(unittest.TestCase):
 
     def test_timeout_context(self):
         with timeout(0.01) as smth:
-            self.assertIsNone(smth)
+            self.assertIsInstance(smth, TimeoutProxy)
 
     def test_silent_timeout_with_unexpected_delay(self):
         mock = Mock()
@@ -60,7 +60,7 @@ class TestTimeoutContext(unittest.TestCase):
         def handler():
             pass
         signal.signal(signal.SIGALRM, handler)
- 
+
         with timeout(0.02):
             sleep(0.01)
 

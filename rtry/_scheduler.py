@@ -1,12 +1,11 @@
-import signal
 import sched
+import signal
 from sched import Event
 from time import monotonic, sleep
-from typing import Union, Callable, Any
 from types import FrameType
+from typing import Any, Callable, Union
 
-from ._types import SignalHandler, TimeoutValue, DelayValue, ExceptionType
-
+from ._types import DelayValue, ExceptionType, SignalHandler, TimeoutValue
 
 __all__ = ("Scheduler", "Event",)
 
@@ -22,9 +21,11 @@ class Scheduler:
         self._scheduler = sched.scheduler(timefunc, delayfunc)
         self._orig_handler = None  # type: SignalHandler
 
+    def get_remaining(self, event: Event) -> TimeoutValue:
+        return max(0, event.time - self._timefunc())
+
     def _next_event(self) -> TimeoutValue:
-        queue = self._scheduler.queue
-        return max(0, queue[0].time - self._timefunc()) if queue else 0
+        return self.get_remaining(self._scheduler.queue[0]) if self._scheduler.queue else 0
 
     def new(self, seconds: TimeoutValue, exception: ExceptionType) -> Event:
         orig_handler = signal.getsignal(signal.SIGALRM)
@@ -52,7 +53,6 @@ class Scheduler:
             signal.alarm(0)
             if self._orig_handler:
                 signal.signal(signal.SIGALRM, self._orig_handler)
-            pass
         else:
             signal.setitimer(self._itimer, self._next_event())
 
