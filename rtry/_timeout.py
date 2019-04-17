@@ -24,7 +24,7 @@ class TimeoutProxy:
 
 class Timeout:
     def __init__(self, scheduler: Scheduler,
-                 seconds: Union[float, int],
+                 seconds: TimeoutValue,
                  exception: Optional[ExceptionType] = CancelledError) -> None:
         assert exception is None or issubclass(exception, CancelledError)
         self._scheduler = scheduler
@@ -34,14 +34,18 @@ class Timeout:
         self._event = None  # type: Union[Event, None]
 
     @property
+    def seconds(self) -> TimeoutValue:
+        return self._seconds
+
+    @property
     def exception(self) -> Union[ExceptionType, None]:
-        return self._exception
+        return self._exception if not self._silent else None
 
     @property
     def remaining(self) -> TimeoutValue:
         if self._event:
             return self._scheduler.get_remaining(self._event)
-        return 0
+        return self._seconds
 
     def __enter__(self) -> TimeoutProxy:
         if self._seconds > 0:
