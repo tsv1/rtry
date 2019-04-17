@@ -273,20 +273,19 @@ class TestTimeout(unittest.TestCase):
         with self.assertRaises(ZeroDivisionError):
             outer()
 
-    def test_timeout_repr(self):
+    def test_timeout_repr_with_default_exception(self):
         self.assertEqual(
             repr(timeout(1.0)),
-            "timeout(1.0, exception={})".format(repr(CancelledError))
-        )
+            "timeout(1.0, exception={})".format(repr(CancelledError)))
 
+    def test_silent_timeout_repr(self):
         self.assertEqual(
             repr(timeout(1.0, exception=None)),
-            "timeout(1.0, exception=None)"
-        )
+            "timeout(1.0, exception=None)")
 
+    def test_timeout_repr_with_custom_exception(self):
         class CustomException(CancelledError):
             pass
         self.assertEqual(
             repr(timeout(1.0, exception=CustomException)),
-            "timeout(1.0, exception={})".format(repr(CustomException))
-        )
+            "timeout(1.0, exception={})".format(repr(CustomException)))

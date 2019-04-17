@@ -1,6 +1,6 @@
 import time
 from functools import wraps
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 from ._errors import CancelledError
 from ._timeout import Timeout
@@ -74,7 +74,7 @@ class Retry:
         return wrapped if self._timeout is None else self._timeout_factory(self._timeout)(wrapped)
 
     def __repr__(self) -> str:
-        args = []
+        args = []  # type: List[str]
         if self._until is not None:
             args += ["until={}".format(repr(self._until))]
         if self._attempts is not None:
