@@ -72,13 +72,13 @@ class TestTimeout(unittest.TestCase):
 
     def test_timeout_exception_property(self):
         exception = timeout(0.05).exception
-        self.assertTrue(issubclass(exception, CancelledError))
+        self.assertEqual(exception, CancelledError)
 
     def test_timeout_exception_property_custom(self):
         class CustomException(CancelledError):
             pass
         exception = timeout(0.05, exception=CustomException).exception
-        self.assertTrue(issubclass(exception, CustomException))
+        self.assertEqual(exception, CustomException)
 
     def test_silent_timeout_exception_property(self):
         exception = timeout(0.05, exception=None).exception
@@ -300,3 +300,30 @@ class TestTimeout(unittest.TestCase):
     def test_silent_timeout_remaining_property(self):
         with timeout(1.0) as t:
             self.assertLess(t.remaining, 1.0)
+
+    def test_timeout_repr(self):
+        self.assertEqual(
+            repr(timeout(1.0)),
+            "timeout(1.0, exception={})".format(repr(CancelledError))
+        )
+
+        self.assertEqual(
+            repr(timeout(1.0, exception=None)),
+            "timeout(1.0, exception=None)"
+        )
+
+        class CustomException(CancelledError):
+            pass
+        self.assertEqual(
+            repr(timeout(1.0, exception=CustomException)),
+            "timeout(1.0, exception={})".format(repr(CustomException))
+        )
+
+    def test_timeout_proxy_repr(self):
+        with timeout(1.0) as t:
+            self.assertTrue(repr(t).startswith("TimeoutProxy(timeout(0.9"))
+            self.assertTrue(repr(t).endswith(", exception={}))".format(repr(CancelledError))))
+
+        with timeout(1.0, exception=None) as t:
+            self.assertTrue(repr(t).startswith("TimeoutProxy(timeout(0.9"))
+            self.assertTrue(repr(t).endswith(", exception=None))"))
