@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="rtry",
-    version="1.1.0",
+    version="1.1.1",
     description="The easiest way to retry operations",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
