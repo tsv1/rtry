@@ -4,8 +4,16 @@ from typing import Any, Callable, Optional, Union
 
 from ._errors import CancelledError
 from ._timeout import Timeout
-from ._types import (AnyCallable, AttemptValue, DelayCallable, DelayValue, LoggerCallable,
-                     SwallowException, TimeoutValue, UntilCallable)
+from ._types import (
+    AnyCallable,
+    AttemptValue,
+    DelayCallable,
+    DelayValue,
+    LoggerCallable,
+    SwallowException,
+    TimeoutValue,
+    UntilCallable,
+)
 
 __all__ = ("Retry",)
 

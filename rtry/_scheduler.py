@@ -53,7 +53,6 @@ class Scheduler:
             signal.alarm(0)
             if self._orig_handler:
                 signal.signal(signal.SIGALRM, self._orig_handler)
-            pass
         else:
             signal.setitimer(self._itimer, self._next_event())
 

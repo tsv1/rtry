@@ -6,7 +6,6 @@ __all__ = ("AttemptValue", "TimeoutValue", "DelayValue", "DelayCallable",
            "AnyCallable", "ExceptionType", "LoggerCallable", "UntilCallable",
            "SwallowException", "SignalHandler",)
 
-
 AttemptValue = int
 TimeoutValue = Union[float, int]
 DelayValue = Union[float, int]
