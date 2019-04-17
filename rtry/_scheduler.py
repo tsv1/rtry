@@ -1,12 +1,11 @@
-import signal
 import sched
+import signal
 from sched import Event
 from time import monotonic, sleep
-from typing import Union, Callable, Any
 from types import FrameType
+from typing import Any, Callable, Union
 
-from ._types import SignalHandler, TimeoutValue, DelayValue, ExceptionType
-
+from ._types import DelayValue, ExceptionType, SignalHandler, TimeoutValue
 
 __all__ = ("Scheduler", "Event",)
 

@@ -1,9 +1,9 @@
 import unittest
-from unittest.mock import MagicMock, patch, call, sentinel
-from time import sleep
 from functools import partial
+from time import sleep
+from unittest.mock import MagicMock, call, patch, sentinel
 
-from rtry import retry, CancelledError
+from rtry import CancelledError, retry
 
 
 class TestRetry(unittest.TestCase):
@@ -133,7 +133,8 @@ class TestRetry(unittest.TestCase):
         self.assertEqual(mock.call_count, 2)
 
     def test_swallow_custom_exception(self):
-        class CustomException(Exception): pass
+        class CustomException(Exception):
+            pass
 
         mock = MagicMock(side_effect=(CustomException, None))
         retry(attempts=3)(mock)()

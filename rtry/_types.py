@@ -1,7 +1,6 @@
-from typing import Union, Type, Callable, Any, Tuple
+from signal import Handlers, Signals
 from types import FrameType
-from signal import Signals, Handlers
-
+from typing import Any, Callable, Tuple, Type, Union
 
 __all__ = ("AttemptValue", "TimeoutValue", "DelayValue", "DelayCallable",
            "AnyCallable", "ExceptionType", "LoggerCallable", "UntilCallable",

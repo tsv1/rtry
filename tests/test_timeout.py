@@ -1,9 +1,9 @@
-import unittest
 import signal
+import unittest
 from time import sleep
-from unittest.mock import Mock, sentinel, call
+from unittest.mock import Mock, call, sentinel
 
-from rtry import timeout, CancelledError
+from rtry import CancelledError, timeout
 
 
 class TestTimeout(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestTimeout(unittest.TestCase):
         def fn():
             sleep(0.02)
         with self.assertRaises(CancelledError):
-           fn()
+            fn()
 
     def test_silent_timeout_with_unexpected_delay(self):
         mock = Mock()
@@ -69,7 +69,7 @@ class TestTimeout(unittest.TestCase):
         def handler():
             pass
         signal.signal(signal.SIGALRM, handler)
- 
+
         @timeout(0.02)
         def fn():
             sleep(0.01)

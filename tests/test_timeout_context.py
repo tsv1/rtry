@@ -1,9 +1,9 @@
-import unittest
 import signal
+import unittest
 from time import sleep
-from unittest.mock import Mock, sentinel, call
+from unittest.mock import Mock, call
 
-from rtry import timeout, CancelledError
+from rtry import CancelledError, timeout
 from rtry.types import TimeoutProxy
 
 
@@ -60,7 +60,7 @@ class TestTimeoutContext(unittest.TestCase):
         def handler():
             pass
         signal.signal(signal.SIGALRM, handler)
- 
+
         with timeout(0.02):
             sleep(0.01)
 

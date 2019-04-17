@@ -1,11 +1,10 @@
 from functools import wraps
-from typing import Union, Type, Optional, Any
 from types import TracebackType
+from typing import Any, Optional, Type, Union
 
 from ._errors import CancelledError
-from ._scheduler import Scheduler, Event
-from ._types import ExceptionType, AnyCallable, TimeoutValue
-
+from ._scheduler import Event, Scheduler
+from ._types import AnyCallable, ExceptionType, TimeoutValue
 
 __all__ = ("Timeout", "TimeoutProxy",)
 
