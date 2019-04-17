@@ -42,6 +42,31 @@ class TestTimeoutContext(unittest.TestCase):
         with timeout(0.01) as smth:
             self.assertIsInstance(smth, TimeoutProxy)
 
+    def test_timeout_proxy_exception_property(self):
+        with timeout(0.05) as t:
+            self.assertTrue(issubclass(t.exception, CancelledError))
+
+    def test_silent_timeout_proxy_exception_property(self):
+        with timeout(0.05, exception=None) as t:
+            self.assertIsNone(t.exception)
+
+    def test_silent_timeout_remaining_property(self):
+        with timeout(1.0) as t:
+            self.assertLess(t.remaining, 1.0)
+
+    def test_timeout_remaining_property(self):
+        seconds = 1.0
+        t = timeout(seconds)
+        with t:
+            self.assertLess(t.remaining, seconds)
+
+    def test_timeout_remaining_property_after(self):
+        t = timeout(0.01)
+        with t:
+            pass
+        sleep(0.02)
+        self.assertEqual(t.remaining, 0)
+
     def test_silent_timeout_with_unexpected_delay(self):
         mock = Mock()
         with timeout(0.01, exception=None):
@@ -285,3 +310,12 @@ class TestTimeoutContext(unittest.TestCase):
             with timeout(0.02):
                 with timeout(0.01):
                     raise ZeroDivisionError()
+
+    def test_timeout_proxy_repr(self):
+        with timeout(1.0) as t:
+            self.assertTrue(repr(t).startswith("TimeoutProxy(timeout(0.9"))
+            self.assertTrue(repr(t).endswith(", exception={}))".format(repr(CancelledError))))
+
+        with timeout(1.0, exception=None) as t:
+            self.assertTrue(repr(t).startswith("TimeoutProxy(timeout(0.9"))
+            self.assertTrue(repr(t).endswith(", exception=None))"))

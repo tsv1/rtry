@@ -21,6 +21,11 @@ class TimeoutProxy:
     def remaining(self) -> TimeoutValue:
         return self._timeout.remaining
 
+    def __repr__(self) -> str:
+        return "TimeoutProxy(timeout({seconds}, exception={exception}))".format(
+            seconds=self.remaining,
+            exception=self.exception)
+
 
 class Timeout:
     def __init__(self, scheduler: Scheduler,
@@ -29,7 +34,8 @@ class Timeout:
         assert exception is None or issubclass(exception, CancelledError)
         self._scheduler = scheduler
         self._seconds = seconds
-        self._exception = type("_CancelledError", (exception or CancelledError,), {})
+        self._orig_exception = exception or CancelledError
+        self._exception = type("_CancelledError", (self._orig_exception,), {})
         self._silent = exception is None
         self._event = None  # type: Union[Event, None]
 
@@ -39,7 +45,7 @@ class Timeout:
 
     @property
     def exception(self) -> Union[ExceptionType, None]:
-        return self._exception if not self._silent else None
+        return self._orig_exception if not self._silent else None
 
     @property
     def remaining(self) -> TimeoutValue:
@@ -67,3 +73,8 @@ class Timeout:
             with self:
                 return fn(*args, **kwargs)
         return wrapped
+
+    def __repr__(self) -> str:
+        return "timeout({seconds}, exception={exception})".format(
+            seconds=self.seconds,
+            exception=self.exception)

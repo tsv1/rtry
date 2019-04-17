@@ -399,3 +399,53 @@ class TestRetry(unittest.TestCase):
 
         with self.assertRaises(CancelledError):
             retry(attempts=999, timeout=0.03)(mock)()
+
+    # Repr
+
+    def test_repr_with_attempts(self):
+        self.assertEqual(
+            repr(retry(attempts=3)),
+            "retry(attempts=3)")
+
+    def test_repr_with_until(self):
+        self.assertEqual(
+            repr(retry(until=bool, attempts=3)),
+            "retry(until={}, attempts=3)".format(repr(bool)))
+
+    def test_repr_with_timeout(self):
+        self.assertEqual(
+            repr(retry(timeout=1.0)),
+            "retry(timeout=1.0)")
+
+    def test_repr_with_delay(self):
+        self.assertEqual(
+            repr(retry(attempts=3, delay=0.1)),
+            "retry(attempts=3, delay=0.1)")
+
+    def test_repr_with_delay_func(self):
+        from math import exp
+        self.assertEqual(
+            repr(retry(attempts=3, delay=exp)),
+            "retry(attempts=3, delay={})".format(repr(exp)))
+
+    def test_repr_with_no_swallow(self):
+        self.assertEqual(
+            repr(retry(attempts=3, swallow=None)),
+            "retry(attempts=3, swallow=())")
+
+    def test_repr_with_custom_swallow(self):
+        exception = ValueError
+        self.assertEqual(
+            repr(retry(attempts=3, swallow=exception)),
+            "retry(attempts=3, swallow={})".format(repr(exception)))
+
+    def test_repr_with_custom_swallows(self):
+        exceptions = (ValueError, IndexError)
+        self.assertEqual(
+            repr(retry(attempts=3, swallow=exceptions)),
+            "retry(attempts=3, swallow={})".format(repr(exceptions)))
+
+    def test_repr_with_logger(self):
+        self.assertEqual(
+            repr(retry(attempts=3, logger=print)),
+            "retry(attempts=3, logger={})".format(repr(print)))
