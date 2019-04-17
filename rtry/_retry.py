@@ -72,3 +72,19 @@ class Retry:
                 raise exception
             return result
         return wrapped if self._timeout is None else self._timeout_factory(self._timeout)(wrapped)
+
+    def __repr__(self) -> str:
+        args = []
+        if self._until is not None:
+            args += ["until={}".format(repr(self._until))]
+        if self._attempts is not None:
+            args += ["attempts={}".format(self._attempts)]
+        if self._timeout is not None:
+            args += ["timeout={}".format(self._timeout)]
+        if self._delay is not None:
+            args += ["delay={}".format(repr(self._delay))]
+        if (self._swallow is not None) and (self._swallow != BaseException):
+            args += ["swallow={}".format(self._swallow)]
+        if self._logger is not None:
+            args += ["logger={}".format(repr(self._logger))]
+        return "retry({})".format(", ".join(args))
