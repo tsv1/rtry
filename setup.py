@@ -1,4 +1,15 @@
-from setuptools import find_packages, setup
+from setuptools import setup, find_packages
+
+
+def find_required():
+    with open("requirements.txt") as f:
+        return f.read().splitlines()
+
+
+def find_dev_required():
+    with open("requirements-dev.txt") as f:
+        return f.read().splitlines()
+
 
 setup(
     name="rtry",
@@ -12,14 +23,8 @@ setup(
     url="https://github.com/nikitanovosibirsk/rtry",
     license="MIT",
     packages=find_packages(exclude=("tests",)),
-    install_requires=[],
-    tests_require=[
-        "codecov==2.0.15",
-        "coverage==4.5.3",
-        "flake8==3.7.7",
-        "isort==4.3.17",
-        "mypy==0.670",
-    ],
+    install_requires=find_required(),
+    tests_require=find_dev_required(),
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.5",
