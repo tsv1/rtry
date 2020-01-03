@@ -5,7 +5,7 @@ from time import monotonic, sleep
 from types import FrameType
 from typing import Any, Callable, Union
 
-from ._types import DelayValue, ExceptionType, SignalHandler, TimeoutValue
+from ._types import DelayValue, SignalHandler, TimeoutValue
 
 __all__ = ("Scheduler", "Event",)
 
@@ -27,13 +27,10 @@ class Scheduler:
     def _next_event(self) -> TimeoutValue:
         return self.get_remaining(self._scheduler.queue[0]) if self._scheduler.queue else 0
 
-    def new(self, seconds: TimeoutValue, exception: ExceptionType) -> Event:
+    def new(self, seconds: TimeoutValue, handler: Callable[[], None]) -> Event:
         orig_handler = signal.getsignal(signal.SIGALRM)
         if not isinstance(orig_handler, type(self)):
             self._orig_handler = orig_handler
-
-        def handler() -> None:
-            raise exception()
 
         priority = -len(self._scheduler.queue)
         event = self._scheduler.enter(seconds, priority, handler)
