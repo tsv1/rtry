@@ -1,6 +1,6 @@
 asynctest==0.13.0
 codecov==2.0.15
-coverage==4.5.3
-flake8==3.7.7
-isort==4.3.17
-mypy==0.670
+coverage==5.0.1
+flake8==3.7.9
+isort==4.3.21
+mypy==0.761
