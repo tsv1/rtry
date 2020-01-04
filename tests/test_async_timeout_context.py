@@ -1,3 +1,4 @@
+import asyncio
 import signal
 from asyncio import sleep
 
@@ -120,13 +121,21 @@ class TestAsyncTimeoutContext(asynctest.TestCase):
         handler_after = signal.getsignal(signal.SIGALRM)
         self.assertEqual(handler_after, handler)
 
-    async def test_custom_exception(self):
+    async def test_timeout_custom_exception_with_unexpected_delay(self):
         class CustomException(CancelledError):
             pass
 
         with self.assertRaises(CustomException):
             async with timeout(0.01, exception=CustomException):
                 await sleep(0.02)
+
+    async def test_timeout_custom_exception_with_manual_raise(self):
+        class CustomException(CancelledError):
+            pass
+
+        with self.assertRaises(CancelledError):
+            async with timeout(0.01, exception=CustomException) as t:
+                raise t.exception()
 
     async def test_nested_timeout_inner_propagation(self):
         mock = CoroMock()
@@ -316,6 +325,20 @@ class TestAsyncTimeoutContext(asynctest.TestCase):
             async with timeout(0.02):
                 async with timeout(0.01):
                     raise ZeroDivisionError()
+
+    async def test_timeout_with_cancelled_task(self):
+        with self.assertRaises(asyncio.CancelledError):
+            async with timeout(0.01):
+                task = self.loop.create_task(sleep(0.02))
+                task.cancel()
+                await task
+
+    async def test_silent_timeout_with_cancelled_task(self):
+        with self.assertRaises(asyncio.CancelledError):
+            async with timeout(0.01, exception=None):
+                task = self.loop.create_task(sleep(0.02))
+                task.cancel()
+                await task
 
     async def test_timeout_proxy_repr(self):
         async with timeout(1.0) as t:

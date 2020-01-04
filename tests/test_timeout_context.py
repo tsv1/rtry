@@ -119,13 +119,21 @@ class TestTimeoutContext(unittest.TestCase):
         handler_after = signal.getsignal(signal.SIGALRM)
         self.assertEqual(handler_after, handler)
 
-    def test_custom_exception(self):
+    def test_timeout_custom_exception_with_unexpected_delay(self):
         class CustomException(CancelledError):
             pass
 
         with self.assertRaises(CustomException):
             with timeout(0.01, exception=CustomException):
                 sleep(0.02)
+
+    def test_timeout_custom_exception_with_manual_raise(self):
+        class CustomException(CancelledError):
+            pass
+
+        with self.assertRaises(CustomException):
+            with timeout(0.01, exception=CustomException) as t:
+                raise t.exception()
 
     def test_nested_timeout_inner_propagation(self):
         mock = Mock()
@@ -204,6 +212,7 @@ class TestTimeoutContext(unittest.TestCase):
                 mock(4)
 
         mock.assert_has_calls([call(1), call(2)])
+        self.assertEqual(mock.call_count, 2)
 
     def test_multiple_nested_timeout_inner_propagation(self):
         mock = Mock()

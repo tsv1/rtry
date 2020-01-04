@@ -82,15 +82,15 @@ class Timeout:
         return exc_val is None
 
     async def __aenter__(self) -> AsyncTimeoutProxy:
-        if sys.version_info >= (3, 7):
+        if sys.version_info >= (3, 7):  # pragma: no cover
             self._task = asyncio.current_task()
         else:  # pragma: no cover
             self._task = asyncio.Task.current_task()
 
         def async_handler() -> None:
             self._scheduler.cancel(self._event)
-            if self._task:
-                setattr(self._task, "__exception__", self._exception())
+            if self._task:  # pragma: no branch
+                setattr(self._task, "__rtry_exc__", self._exception())
                 self._task.cancel()
 
         if self._seconds > 0:
@@ -103,15 +103,14 @@ class Timeout:
                         exc_tb: Optional[TracebackType]) -> bool:
         self._scheduler.cancel(self._event)
 
-        if isinstance(exc_val, asyncio.CancelledError):
-            exception = getattr(self._task, "__exception__", None)
-            if isinstance(exception, self._exception):
-                if self._silent:
-                    return True
-                raise exception  # type: ignore
+        exception = getattr(self._task, "__rtry_exc__", None)
+        self._task = None
 
-        if isinstance(exc_val, self._exception):
-            return self._silent
+        if isinstance(exc_val, asyncio.CancelledError) and isinstance(exception, self._exception):
+            if self._silent:
+                return True
+            raise exception  # type: ignore
+
         return exc_val is None
 
     def __call__(self, fn: AnyCallable) -> AnyCallable:
