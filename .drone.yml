@@ -64,6 +64,25 @@ trigger:
 
 ---
 kind: pipeline
+name: python3.8
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: test
+  image: python:3.8
+  commands:
+  - make install lint test
+
+trigger:
+  event:
+  - push
+  - tag
+
+---
+kind: pipeline
 name: python3.5
 
 platform:
@@ -125,5 +144,6 @@ depends_on:
 - python3.5
 - python3.6
 - python3.7
+- python3.8
 
 ...
