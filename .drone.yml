@@ -10,19 +10,14 @@ steps:
 - name: lint
   image: python:3.6
   commands:
-  - python3 setup.py install
-  - pip3 install -r requirements-dev.txt
-  - python3 -m mypy rtry --strict
-  - python3 -m isort rtry --recursive --check-only
-  - python3 -m flake8 rtry --statistics
+  - make install
+  - make lint
 
 - name: test
   image: python:3.6
   commands:
-  - python3 setup.py install
-  - pip3 install -r requirements-dev.txt
-  - coverage run -m unittest tests
-  - coverage xml -o /tmp/artifacts/coverage.xml
+  - make install
+  - COV_REPORT_DEST=/tmp/artifacts/coverage.xml make coverage
   volumes:
   - name: artifacts
     path: /tmp/artifacts
@@ -50,27 +45,6 @@ trigger:
 
 ---
 kind: pipeline
-name: python3.5
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: test
-  image: python:3.5
-  commands:
-  - python3 setup.py install
-  - pip3 install -r requirements-dev.txt
-  - python3 -m unittest tests
-
-trigger:
-  event:
-  - push
-  - tag
-
----
-kind: pipeline
 name: python3.7
 
 platform:
@@ -81,9 +55,45 @@ steps:
 - name: test
   image: python:3.7
   commands:
-  - python3 setup.py install
-  - pip3 install -r requirements-dev.txt
-  - python3 -m unittest tests
+  - make install lint test
+
+trigger:
+  event:
+  - push
+  - tag
+
+---
+kind: pipeline
+name: python3.8
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: test
+  image: python:3.8
+  commands:
+  - make install lint test
+
+trigger:
+  event:
+  - push
+  - tag
+
+---
+kind: pipeline
+name: python3.5
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: test
+  image: python:3.5.3
+  commands:
+  - make install lint test
 
 trigger:
   event:
@@ -102,7 +112,7 @@ steps:
 - name: build
   image: python:3.6
   commands:
-  - python3 setup.py sdist bdist_wheel
+  - make build
   volumes:
   - name: artifacts
     path: /tmp/artifacts
@@ -134,5 +144,6 @@ depends_on:
 - python3.5
 - python3.6
 - python3.7
+- python3.8
 
 ...
