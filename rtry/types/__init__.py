@@ -1,6 +1,6 @@
 from .._errors import CancelledError
 from .._retry import Retry
-from .._scheduler import Event, Scheduler
+from .._scheduler import AbstractScheduler, AsyncEvent, AsyncScheduler, Event, Scheduler
 from .._timeout import AsyncTimeoutProxy, Timeout, TimeoutProxy
 from .._types import (
     AttemptValue,
@@ -15,5 +15,5 @@ from .._types import (
 
 __all__ = ("AttemptValue", "TimeoutValue", "DelayValue", "DelayCallable",
            "ExceptionType", "LoggerCallable", "UntilCallable", "SwallowException",
-           "Scheduler", "Event", "Timeout", "TimeoutProxy", "AsyncTimeoutProxy",
-           "Retry", "CancelledError",)
+           "Scheduler", "AsyncEvent", "Event", "Timeout", "TimeoutProxy", "AsyncTimeoutProxy",
+           "Retry", "CancelledError", "AbstractScheduler", "AsyncScheduler",)

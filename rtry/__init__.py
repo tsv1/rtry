@@ -2,12 +2,13 @@ from functools import partial
 
 from ._errors import CancelledError
 from ._retry import Retry
-from ._scheduler import Scheduler
+from ._scheduler import AsyncScheduler, Scheduler
 from ._timeout import Timeout
 
 __all__ = ("retry", "timeout", "CancelledError",)
 __version__ = "1.1.2"
 
 _scheduler = Scheduler()
-timeout = partial(Timeout, _scheduler)
+_async_scheduler = AsyncScheduler()
+timeout = partial(Timeout, _scheduler, _async_scheduler)
 retry = partial(Retry, timeout)

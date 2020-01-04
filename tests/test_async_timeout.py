@@ -1,3 +1,4 @@
+import asyncio
 import signal
 from asyncio import sleep
 
@@ -256,3 +257,23 @@ class TestAsyncTimeout(asynctest.TestCase):
             await inner()
         with self.assertRaises(ZeroDivisionError):
             await outer()
+
+    async def test_timeout_with_cancelled_task(self):
+        @timeout(0.01)
+        async def fn():
+            await sleep(0.02)
+
+        with self.assertRaises(asyncio.CancelledError):
+            task = self.loop.create_task(fn())
+            task.cancel()
+            await task
+
+    async def test_silent_timeout_with_cancelled_task(self):
+        @timeout(0.01, exception=None)
+        async def fn():
+            await sleep(0.02)
+
+        with self.assertRaises(asyncio.CancelledError):
+            task = self.loop.create_task(fn())
+            task.cancel()
+            await task

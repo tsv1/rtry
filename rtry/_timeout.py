@@ -5,7 +5,7 @@ from types import TracebackType
 from typing import Any, Optional, Type, Union
 
 from ._errors import CancelledError
-from ._scheduler import Event, Scheduler
+from ._scheduler import AsyncEvent, AsyncScheduler, Event, Scheduler
 from ._types import AnyCallable, ExceptionType, TimeoutValue
 
 __all__ = ("Timeout", "TimeoutProxy", "AsyncTimeoutProxy",)
@@ -37,11 +37,14 @@ class AsyncTimeoutProxy(TimeoutProxy):
 
 
 class Timeout:
-    def __init__(self, scheduler: Scheduler,
+    def __init__(self,
+                 scheduler: Scheduler,
+                 async_scheduler: AsyncScheduler,
                  seconds: TimeoutValue,
                  exception: Optional[ExceptionType] = CancelledError) -> None:
         assert exception is None or issubclass(exception, CancelledError)
         self._scheduler = scheduler
+        self._async_scheduler = async_scheduler
         self._seconds = seconds
         self._orig_exception = exception or CancelledError
         self._exception = type("_CancelledError", (self._orig_exception,), {})
@@ -59,9 +62,12 @@ class Timeout:
 
     @property
     def remaining(self) -> TimeoutValue:
-        if self._event:
-            return self._scheduler.get_remaining(self._event)
-        return self._seconds
+        if self._event is None:
+            return self._seconds
+
+        if isinstance(self._event, AsyncEvent):
+            return self._async_scheduler.get_remaining(self._event)
+        return self._scheduler.get_remaining(self._event)
 
     def __enter__(self) -> TimeoutProxy:
         def sync_handler() -> None:
@@ -88,20 +94,20 @@ class Timeout:
             self._task = asyncio.Task.current_task()
 
         def async_handler() -> None:
-            self._scheduler.cancel(self._event)
+            self._async_scheduler.cancel(self._event)
             if self._task:  # pragma: no branch
                 setattr(self._task, "__rtry_exc__", self._exception())
                 self._task.cancel()
 
         if self._seconds > 0:
-            self._event = self._scheduler.new(self._seconds, async_handler)
+            self._event = self._async_scheduler.new(self._seconds, async_handler)
         return AsyncTimeoutProxy(self)
 
     async def __aexit__(self,
                         exc_type: Optional[Type[BaseException]],
                         exc_val: Optional[BaseException],
                         exc_tb: Optional[TracebackType]) -> bool:
-        self._scheduler.cancel(self._event)
+        self._async_scheduler.cancel(self._event)
 
         exception = getattr(self._task, "__rtry_exc__", None)
         self._task = None
