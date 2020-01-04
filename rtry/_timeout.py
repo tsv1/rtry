@@ -115,10 +115,18 @@ class Timeout:
 
     def __call__(self, fn: AnyCallable) -> AnyCallable:
         @wraps(fn)
-        def wrapped(*args: Any, **kwargs: Any) -> Any:
+        def sync_wrapped(*args: Any, **kwargs: Any) -> Any:
             with self:
                 return fn(*args, **kwargs)
-        return wrapped
+
+        @wraps(fn)
+        async def async_wrapped(*args: Any, **kwargs: Any) -> Any:
+            async with self:
+                return await fn(*args, **kwargs)
+
+        if asyncio.iscoroutinefunction(fn):
+            return async_wrapped
+        return sync_wrapped
 
     def __repr__(self) -> str:
         return "timeout({seconds}, exception={exception})".format(

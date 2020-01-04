@@ -235,6 +235,7 @@ class TestTimeout(unittest.TestCase):
         def fn():
             pass
         fn()
+        sleep(0.01)
         fn()
 
     def test_multiple_calls_with_unexpected_delay(self):
