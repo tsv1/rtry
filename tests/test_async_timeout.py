@@ -4,7 +4,7 @@ from asyncio import sleep
 
 import asynctest
 from asynctest.mock import CoroutineMock as CoroMock
-from asynctest.mock import call, sentinel
+from asynctest.mock import Mock, call, sentinel
 
 from rtry import CancelledError, timeout
 
@@ -43,12 +43,12 @@ class TestAsyncTimeout(asynctest.TestCase):
             await fn()
 
     async def test_silent_timeout_with_unexpected_delay(self):
-        mock = CoroMock()
+        mock = Mock()
         @timeout(0.01, exception=None)
         async def fn():
-            await mock(1)
+            mock(1)
             await sleep(0.02)
-            await mock(2)
+            mock(2)
         await fn()
         self.assertEqual(mock.mock_calls, [call(1)])
 
@@ -119,18 +119,18 @@ class TestAsyncTimeout(asynctest.TestCase):
         self.assertEqual(await outer(), sentinel.res)
 
     async def test_nested_timeout_inner_propagation(self):
-        mock = CoroMock()
+        mock = Mock()
 
         @timeout(0.05)
         async def outer():
-            await mock(1)
+            mock(1)
             @timeout(0.01)
             async def inner():
-                await mock(2)
+                mock(2)
                 await sleep(0.03)
-                await mock(3)
+                mock(3)
             await inner()
-            await mock(4)
+            mock(4)
 
         with self.assertRaises(CancelledError):
             await outer()
@@ -138,18 +138,18 @@ class TestAsyncTimeout(asynctest.TestCase):
         self.assertEqual(mock.mock_calls, [call(1), call(2)])
 
     async def test_nested_timeout_outer_propagation(self):
-        mock = CoroMock()
+        mock = Mock()
 
         @timeout(0.01)
         async def outer():
-            await mock(1)
+            mock(1)
             @timeout(0.05)
             async def inner():
-                await mock(2)
+                mock(2)
                 await sleep(0.03)
-                await mock(3)
+                mock(3)
             await inner()
-            await mock(4)
+            mock(4)
 
         with self.assertRaises(CancelledError):
             await outer()
@@ -157,20 +157,20 @@ class TestAsyncTimeout(asynctest.TestCase):
         self.assertEqual(mock.mock_calls, [call(1), call(2)])
 
     async def test_nested_timeout_outer_raises(self):
-        mock = CoroMock()
+        mock = Mock()
 
         @timeout(0.03)
         async def outer():
-            await mock(1)
+            mock(1)
             @timeout(0.07)
             async def inner():
-                await mock(2)
+                mock(2)
                 await sleep(0.01)
-                await mock(3)
+                mock(3)
             await inner()
-            await mock(4)
+            mock(4)
             await sleep(0.04)
-            await mock(5)
+            mock(5)
 
         with self.assertRaises(CancelledError):
             await outer()
@@ -178,20 +178,20 @@ class TestAsyncTimeout(asynctest.TestCase):
         self.assertEqual(mock.mock_calls, [call(1), call(2), call(3), call(4)])
 
     async def test_nested_timeout_outer_raises_inner_silent(self):
-        mock = CoroMock()
+        mock = Mock()
 
         @timeout(0.05)
         async def outer():
-            await mock(1)
+            mock(1)
             @timeout(0.01, exception=None)
             async def inner():
-                await mock(2)
+                mock(2)
                 await sleep(0.03)
-                await mock(3)
+                mock(3)
             await inner()
-            await mock(4)
+            mock(4)
             await sleep(0.05)
-            await mock(5)
+            mock(5)
 
         with self.assertRaises(CancelledError):
             await outer()
@@ -199,18 +199,18 @@ class TestAsyncTimeout(asynctest.TestCase):
         self.assertEqual(mock.mock_calls, [call(1), call(2), call(4)])
 
     async def test_nested_timeout_raises_with_same_timeout(self):
-        mock = CoroMock()
+        mock = Mock()
 
         @timeout(0.01)
         async def outer():
-            await mock(1)
+            mock(1)
             @timeout(0.01)
             async def inner():
-                await mock(2)
+                mock(2)
                 await sleep(0.03)
-                await mock(3)
+                mock(3)
             await inner()
-            await mock(4)
+            mock(4)
 
         with self.assertRaises(CancelledError):
             await outer()
