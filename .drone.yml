@@ -17,7 +17,7 @@ steps:
   image: python:3.6
   commands:
   - make install
-  - make coverage
+  - COV_REPORT_DEST=/tmp/artifacts/coverage.xml make coverage
   volumes:
   - name: artifacts
     path: /tmp/artifacts

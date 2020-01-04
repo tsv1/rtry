@@ -14,6 +14,7 @@ test:
 coverage:
 	coverage run -m unittest tests
 	coverage report
+	coverage xml -o $(or $(COV_REPORT_DEST),coverage.xml)
 
 .PHONY: check-types
 check-types:
