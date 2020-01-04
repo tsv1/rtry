@@ -50,7 +50,7 @@ class Timeout:
         self._exception = type("_CancelledError", (self._orig_exception,), {})
         self._silent = exception is None
         self._event = None  # type: Union[Event, None]
-        self._task = None  # type: Optional[asyncio.Task[None]]
+        self._raised = None  # type: Union[Event, None]
 
     @property
     def seconds(self) -> TimeoutValue:
@@ -72,7 +72,8 @@ class Timeout:
     def __enter__(self) -> TimeoutProxy:
         def sync_handler() -> None:
             self._scheduler.cancel(self._event)
-            raise self._exception()
+            self._raised = self._exception()
+            raise self._raised  # type: ignore
 
         if self._seconds > 0:
             self._event = self._scheduler.new(self._seconds, sync_handler)
@@ -89,15 +90,15 @@ class Timeout:
 
     async def __aenter__(self) -> AsyncTimeoutProxy:
         if sys.version_info >= (3, 7):  # pragma: no cover
-            self._task = asyncio.current_task()
+            task = asyncio.current_task()
         else:  # pragma: no cover
-            self._task = asyncio.Task.current_task()
+            task = asyncio.Task.current_task()
 
-        def async_handler() -> None:
+        def async_handler(task: "Optional[asyncio.Task[None]]" = task) -> None:
             self._async_scheduler.cancel(self._event)
-            if self._task:  # pragma: no branch
-                setattr(self._task, "__rtry_exc__", self._exception())
-                self._task.cancel()
+            if task:  # pragma: no branch
+                self._raised = self._exception()
+                task.cancel()
 
         if self._seconds > 0:
             self._event = self._async_scheduler.new(self._seconds, async_handler)
@@ -109,13 +110,11 @@ class Timeout:
                         exc_tb: Optional[TracebackType]) -> bool:
         self._async_scheduler.cancel(self._event)
 
-        exception = getattr(self._task, "__rtry_exc__", None)
-        self._task = None
-
-        if isinstance(exc_val, asyncio.CancelledError) and isinstance(exception, self._exception):
+        if isinstance(exc_val, asyncio.CancelledError) and \
+           isinstance(self._raised, self._exception):
             if self._silent:
                 return True
-            raise exception  # type: ignore
+            raise self._raised  # type: ignore
 
         return exc_val is None
 
