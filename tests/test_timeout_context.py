@@ -6,6 +6,8 @@ from unittest.mock import Mock, call
 from rtry import CancelledError, timeout
 from rtry.types import TimeoutProxy
 
+from ._ignore_exception import ignore_exception
+
 
 class TestTimeoutContext(unittest.TestCase):
     def test_no_timeout(self):
@@ -38,6 +40,19 @@ class TestTimeoutContext(unittest.TestCase):
                 mock(2)
         mock.assert_called_once_with(1)
 
+    def test_timeout_with_ignored_inner_exception(self):
+        mock = Mock()
+        with self.assertRaises(CancelledError):
+            with timeout(0.05):
+                with timeout(0.01):
+                    with ignore_exception(CancelledError, 0.05):
+                        mock(1)
+                        sleep(0.02)
+                        mock(2)
+                    mock(3)
+                mock(4)
+        mock.assert_called_once_with(1)
+
     def test_timeout_context(self):
         with timeout(0.01) as smth:
             self.assertIsInstance(smth, TimeoutProxy)
@@ -50,11 +65,11 @@ class TestTimeoutContext(unittest.TestCase):
         with timeout(0.05, exception=None) as t:
             self.assertIsNone(t.exception)
 
-    def test_silent_timeout_remaining_property(self):
+    def test_timeout_remaining_property(self):
         with timeout(1.0) as t:
             self.assertLess(t.remaining, 1.0)
 
-    def test_timeout_remaining_property(self):
+    def test_timeout_remaining_property_berfore(self):
         seconds = 1.0
         t = timeout(seconds)
         with t:
@@ -104,13 +119,21 @@ class TestTimeoutContext(unittest.TestCase):
         handler_after = signal.getsignal(signal.SIGALRM)
         self.assertEqual(handler_after, handler)
 
-    def test_custom_exception(self):
+    def test_timeout_custom_exception_with_unexpected_delay(self):
         class CustomException(CancelledError):
             pass
 
         with self.assertRaises(CustomException):
             with timeout(0.01, exception=CustomException):
                 sleep(0.02)
+
+    def test_timeout_custom_exception_with_manual_raise(self):
+        class CustomException(CancelledError):
+            pass
+
+        with self.assertRaises(CustomException):
+            with timeout(0.01, exception=CustomException) as t:
+                raise t.exception()
 
     def test_nested_timeout_inner_propagation(self):
         mock = Mock()
@@ -189,6 +212,7 @@ class TestTimeoutContext(unittest.TestCase):
                 mock(4)
 
         mock.assert_has_calls([call(1), call(2)])
+        self.assertEqual(mock.call_count, 2)
 
     def test_multiple_nested_timeout_inner_propagation(self):
         mock = Mock()

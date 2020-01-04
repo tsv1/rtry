@@ -92,26 +92,6 @@ trigger:
 
 ---
 kind: pipeline
-name: pypy3.6
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: test
-  image: pypy:3.6-7.0-slim
-  commands:
-  - pypy3 setup.py install
-  - pypy3 -m unittest tests
-
-trigger:
-  event:
-  - push
-  - tag
-
----
-kind: pipeline
 name: release
 
 platform:
@@ -154,6 +134,5 @@ depends_on:
 - python3.5
 - python3.6
 - python3.7
-- pypy3.6
 
 ...

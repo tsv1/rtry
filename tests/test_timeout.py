@@ -228,12 +228,14 @@ class TestTimeout(unittest.TestCase):
         with self.assertRaises(CancelledError):
             outer()
         mock.assert_has_calls([call(1), call(2)])
+        self.assertEqual(mock.call_count, 2)
 
     def test_multiple_calls_with_expected_delay(self):
         @timeout(0.01)
         def fn():
             pass
         fn()
+        sleep(0.01)
         fn()
 
     def test_multiple_calls_with_unexpected_delay(self):
