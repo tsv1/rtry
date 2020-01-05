@@ -119,19 +119,19 @@ class Timeout:
         return exc_val is None
 
     def __call__(self, fn: AnyCallable) -> AnyCallable:
-        @wraps(fn)
-        def sync_wrapped(*args: Any, **kwargs: Any) -> Any:
-            with self:
-                return fn(*args, **kwargs)
-
-        @wraps(fn)
-        async def async_wrapped(*args: Any, **kwargs: Any) -> Any:
-            async with self:
-                return await fn(*args, **kwargs)
-
         if asyncio.iscoroutinefunction(fn):
-            return async_wrapped
-        return sync_wrapped
+            @wraps(fn)
+            async def async_wrapped(*args: Any, **kwargs: Any) -> Any:
+                async with self:
+                    return await fn(*args, **kwargs)
+            wrapped = async_wrapped
+        else:
+            @wraps(fn)
+            def sync_wrapped(*args: Any, **kwargs: Any) -> Any:
+                with self:
+                    return fn(*args, **kwargs)
+            wrapped = sync_wrapped
+        return wrapped
 
     def __repr__(self) -> str:
         return "timeout({seconds}, exception={exception})".format(

@@ -258,7 +258,6 @@ class TestRetry(unittest.TestCase):
             call(1, exception1, mock),
             call(2, exception2, mock)
         ])
-        # assert_has_calls does not check call_count
         self.assertEqual(logger.call_count, 2)
 
     def test_logger_with_errors(self):

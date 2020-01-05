@@ -42,69 +42,86 @@ class Retry:
         if isinstance(self._swallow, list):
             self._swallow = tuple(self._swallow)
         self._logger = logger
+        self._fn = None  # type: Union[AnyCallable, None]
+
+    def _sync_wrapped(self, *args: Any, **kwargs: Any) -> Any:
+        assert self._fn is not None
+
+        retried = 0
+        exception = None
+        while (self._attempts is None) or (retried < self._attempts):
+            try:
+                result = self._fn(*args, **kwargs)
+            except CancelledError:
+                raise
+            except self._swallow as e:
+                exception = e
+            else:
+                if self._until is None:
+                    return result
+                elif not(self._until(result)):
+                    return result
+                exception = None
+            retried += 1
+            if hasattr(self._logger, "__call__"):
+                self._logger(retried, exception or result, self._fn)  # type: ignore
+            if self._delay is not None:
+                delay = self._delay
+                if hasattr(self._delay, "__call__"):
+                    delay = self._delay(retried)  # type: ignore
+                time.sleep(delay)  # type: ignore
+            else:
+                time.sleep(0)
+        if exception:
+            raise exception
+        return result
+
+    async def _async_wrapped(self, *args: Any, **kwargs: Any) -> Any:
+        assert self._fn is not None
+
+        retried = 0
+        exception = None
+        while (self._attempts is None) or (retried < self._attempts):
+            try:
+                result = await self._fn(*args, **kwargs)
+            except (CancelledError, asyncio.CancelledError):
+                raise
+            except self._swallow as e:
+                exception = e
+            else:
+                if self._until is None:
+                    return result
+                elif not(self._until(result)):
+                    return result
+                exception = None
+            retried += 1
+            if hasattr(self._logger, "__call__"):
+                self._logger(retried, exception or result, self._fn)  # type: ignore
+            if self._delay is not None:
+                delay = self._delay
+                if hasattr(self._delay, "__call__"):
+                    delay = self._delay(retried)  # type: ignore
+                await asyncio.sleep(delay)  # type: ignore
+            else:
+                await asyncio.sleep(0)
+        if exception:
+            raise exception
+        return result
 
     def __call__(self, fn: AnyCallable) -> AnyCallable:
-        @wraps(fn)
-        def sync_wrapped(*args: Any, **kwargs: Any) -> Any:
-            retried = 0
-            exception = None
-            while (self._attempts is None) or (retried < self._attempts):
-                try:
-                    result = fn(*args, **kwargs)
-                except CancelledError:
-                    raise
-                except self._swallow as e:
-                    exception = e
-                else:
-                    if self._until is None:
-                        return result
-                    elif not(self._until(result)):
-                        return result
-                    exception = None
-                retried += 1
-                if hasattr(self._logger, "__call__"):
-                    self._logger(retried, exception or result, fn)  # type: ignore
-                if self._delay is not None:
-                    delay = self._delay
-                    if hasattr(self._delay, "__call__"):
-                        delay = self._delay(retried)  # type: ignore
-                    time.sleep(delay)  # type: ignore
-            if exception:
-                raise exception
-            return result
+        self._fn = fn
 
-        @wraps(fn)
-        async def async_wrapped(*args: Any, **kwargs: Any) -> Any:
-            retried = 0
-            exception = None
-            while (self._attempts is None) or (retried < self._attempts):
-                try:
-                    result = await fn(*args, **kwargs)
-                except (CancelledError, asyncio.CancelledError):
-                    raise
-                except self._swallow as e:
-                    exception = e
-                else:
-                    if self._until is None:
-                        return result
-                    elif not(self._until(result)):
-                        return result
-                    exception = None
-                retried += 1
-                if hasattr(self._logger, "__call__"):
-                    self._logger(retried, exception or result, fn)  # type: ignore
-                if self._delay is not None:
-                    delay = self._delay
-                    if hasattr(self._delay, "__call__"):
-                        delay = self._delay(retried)  # type: ignore
-                    await asyncio.sleep(delay)  # type: ignore
-                else:
-                    await asyncio.sleep(0)
-            if exception:
-                raise exception
-            return result
+        if asyncio.iscoroutinefunction(fn):
+            @wraps(fn)
+            async def async_wrapped(*args: Any, **kwargs: Any) -> Any:
+                return await self._async_wrapped(*args, **kwargs)
+            wrapped = async_wrapped
+        else:
+            @wraps(fn)
+            def sync_wrapped(*args: Any, **kwargs: Any) -> Any:
+                return self._sync_wrapped(*args, **kwargs)
+            wrapped = sync_wrapped
 
-        wrapped = async_wrapped if asyncio.iscoroutinefunction(fn) else sync_wrapped
         if self._timeout is None:
             return wrapped
         return self._timeout_factory(self._timeout)(wrapped)
