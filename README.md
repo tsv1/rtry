@@ -17,7 +17,9 @@ pip3 install rtry
 * [timeout](#timeout)
     * [as context manager](#as-context-manager)
     * [as context manager (silent)](#as-context-manager-silent)
+    * [as context manager (asyncio)](#as-context-manager-asyncio)
     * [as decorator](#as-decorator)
+    * [as decorator (asyncio)](#as-decorator-asyncio)
     * [as argument](#as-argument)
 * [retry](#retry)
     * [attempts](#attempts)
@@ -25,6 +27,7 @@ pip3 install rtry
     * [logger](#logger)
     * [delay](#delay)
     * [swallow](#swallow)
+    * [asyncio](#asyncio)
 
 ---
 
@@ -54,6 +57,26 @@ with timeout(3.0, exception=None):
     resp = requests.get("https://httpbin.org/status/200")
 ```
 
+##### As context manager (asyncio)
+
+```python
+import asyncio
+import aiohttp
+from rtry import timeout, CancelledError
+
+async def main():
+    try:
+        async with aiohttp.ClientSession() as session, timeout(3.0):
+            async with session.get("https://httpbin.org/status/200") as resp:
+                return resp
+    except CancelledError:
+        raise
+    else:
+        print(resp)
+
+asyncio.run(main())
+```
+
 ##### As decorator
 
 ```python
@@ -70,6 +93,30 @@ except CancelledError:
     raise
 else:
     print(resp)
+```
+
+##### As decorator (asyncio)
+
+```python
+import asyncio
+import aiohttp
+from rtry import timeout, CancelledError
+
+@timeout(3.0)
+async def fn():
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://httpbin.org/status/200") as resp:
+            return resp
+
+async def main():
+    try:
+        resp = await fn()
+    except CancelledError:
+        raise
+    else:
+        print(resp)
+
+asyncio.run(main())
 ```
 
 ##### As argument
@@ -164,9 +211,9 @@ def fn():
     resp = requests.get("https://httpbin.org/status/500")
     return resp
 
-started_at = time()
+started_at = time.monotonic()
 resp = fn()
-ended_at = time()
+ended_at = time.monotonic()
 print('Elapsed {:.2f}'.format(ended_at - started_at))
 # Elapsed 2.11
 ```
@@ -181,9 +228,9 @@ def fn():
     resp = requests.get("https://httpbin.org/status/500")
     return resp
 
-started_at = time()
+started_at = time.monotonic()
 resp = fn()
-ended_at = time()
+ended_at = time.monotonic()
 print('Elapsed {:.2f}'.format(ended_at - started_at))
 # Elapsed 11.79
 ```
@@ -222,4 +269,29 @@ except Exception as e:
     # 1 HTTPConnectionPool(host='127.0.0.1', port=80): Max retries exceeded with url: /status/500
     # 2 HTTPConnectionPool(host='127.0.0.1', port=80): Max retries exceeded with url: /status/500
     # HTTPConnectionPool(host='127.0.0.1', port=80): Max retries exceeded with url: /status/500
+```
+
+### AsyncIO
+
+```python
+import asyncio
+import aiohttp
+from rtry import retry
+
+@retry(attempts=2)
+async def fn():
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://httpbin.org/status/500") as resp:
+            print(resp)
+            assert resp.status == 200
+            return resp
+
+async def main():
+    resp = await fn()
+    # <ClientResponse(https://httpbin.org/status/500) [500 INTERNAL SERVER ERROR]>
+    # <ClientResponse(https://httpbin.org/status/500) [500 INTERNAL SERVER ERROR]>
+    # Traceback
+    #   AssertionError
+
+asyncio.run(main())
 ```
