@@ -13,7 +13,7 @@ def find_dev_required():
 
 setup(
     name="rtry",
-    version="1.1.2",
+    version="1.2.0",
     description="The easiest way to retry operations",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
@@ -30,6 +30,7 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
     ],
