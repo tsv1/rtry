@@ -65,7 +65,7 @@ class TestAsyncTimeout(asynctest.TestCase):
     async def test_forwards_args_and_result(self):
         mock = CoroMock(return_value=sentinel.res)
         res = await timeout(0.01)(mock)(sentinel.a, sentinel.b, key1=sentinel.val, key2=None)
-        self.assertEqual(mock.mock_calls, [
+        self.assertEqual(mock.await_args_list, [
             call(sentinel.a, sentinel.b, key1=sentinel.val, key2=None)
         ])
         self.assertEqual(res, sentinel.res)

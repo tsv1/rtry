@@ -23,7 +23,7 @@ class TestAsyncRetry(asynctest.TestCase):
 
         res = await retry(attempts=1)(mock)(sentinel.a, sentinel.b, key1=sentinel.val, key2=None)
 
-        self.assertEqual(mock.mock_calls, [
+        self.assertEqual(mock.await_args_list, [
             call(sentinel.a, sentinel.b, key1=sentinel.val, key2=None)
         ])
         self.assertEqual(res, sentinel.res)
@@ -33,28 +33,28 @@ class TestAsyncRetry(asynctest.TestCase):
     async def test_single_attempt(self):
         mock = CoroMock(side_effect=None)
         await retry(attempts=1)(mock)()
-        self.assertEqual(mock.mock_calls, [call()])
+        self.assertEqual(mock.await_args_list, [call()])
 
     async def test_multiple_attempts_without_errors(self):
         mock = CoroMock(side_effect=None)
         await retry(attempts=3)(mock)()
-        self.assertEqual(mock.mock_calls, [call()])
+        self.assertEqual(mock.await_args_list, [call()])
 
     async def test_multiple_attempts_with_error_after_start(self):
         mock = CoroMock(side_effect=(Exception, None, None))
         await retry(attempts=3)(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 2)
+        self.assertEqual(mock.await_args_list, [call()] * 2)
 
     async def test_multiple_attempts_with_error_before_end(self):
         mock = CoroMock(side_effect=(Exception, Exception, None))
         await retry(attempts=3)(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
 
     async def test_multiple_attempts_with_errors(self):
         mock = CoroMock(side_effect=Exception)
         with self.assertRaises(Exception):
             await retry(attempts=3)(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
 
     # Delay
 
@@ -62,23 +62,23 @@ class TestAsyncRetry(asynctest.TestCase):
         mock = CoroMock(side_effect=None)
         with patch("asyncio.sleep", return_value=None) as patched:
             await retry(attempts=3)(mock)()
-            patched.assert_not_awaited()  # await_args_list
-        self.assertEqual(mock.mock_calls, [call()])
+            self.assertEqual(patched.await_args_list, [])
+        self.assertEqual(mock.await_args_list, [call()])
 
     async def test_no_delay_without_errors(self):
         mock = CoroMock(side_effect=None)
         with patch("asyncio.sleep", return_value=None) as patched:
             await retry(attempts=3, delay=1.0)(mock)()
-            patched.assert_not_awaited()
-        self.assertEqual(mock.mock_calls, [call()])
+            self.assertEqual(patched.await_args_list, [])
+        self.assertEqual(mock.await_args_list, [call()])
 
     async def test_delay_with_error_after_start(self):
         mock = CoroMock(side_effect=(Exception, None, None))
         with patch("asyncio.sleep", return_value=None) as patched:
             delay = 1.0
             await retry(attempts=3, delay=delay)(mock)()
-            patched.assert_awaited_once_with(delay)
-        self.assertEqual(mock.mock_calls, [call()] * 2)
+            self.assertEqual(patched.await_args_list, [call(delay)])
+        self.assertEqual(mock.await_args_list, [call()] * 2)
 
     async def test_delay_with_error_before_end(self):
         mock = CoroMock(side_effect=(Exception, Exception, None))
@@ -88,7 +88,7 @@ class TestAsyncRetry(asynctest.TestCase):
             await retry(attempts=3, delay=delay)(mock)()
             self.assertEqual(patched.await_args_list, [call(delay)] * 2)
 
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
 
     async def test_delay_with_errors(self):
         mock = CoroMock(side_effect=Exception)
@@ -99,7 +99,7 @@ class TestAsyncRetry(asynctest.TestCase):
                 await retry(attempts=3, delay=delay)(mock)()
             self.assertEqual(patched.await_args_list, [call(delay)] * 3)
 
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
 
     async def test_delay_with_custom_backoff(self):
         mock = CoroMock(side_effect=(Exception, Exception, None))
@@ -111,7 +111,7 @@ class TestAsyncRetry(asynctest.TestCase):
             self.assertEqual(delay.mock_calls, [call(1), call(2)])
             self.assertEqual(patched.await_args_list, [call(42), call(0)])
 
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
 
     # Swallow
 
@@ -119,12 +119,12 @@ class TestAsyncRetry(asynctest.TestCase):
         mock = CoroMock(side_effect=(Exception, None))
         with self.assertRaises(Exception):
             await retry(attempts=2, swallow=None)(mock)()
-        self.assertEqual(mock.mock_calls, [call()])
+        self.assertEqual(mock.await_args_list, [call()])
 
     async def test_swallow_builtin_exception(self):
         mock = CoroMock(side_effect=(Exception, None))
         await retry(attempts=3)(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 2)
+        self.assertEqual(mock.await_args_list, [call()] * 2)
 
     async def test_swallow_custom_exception(self):
         class CustomException(Exception):
@@ -132,32 +132,32 @@ class TestAsyncRetry(asynctest.TestCase):
 
         mock = CoroMock(side_effect=(CustomException, None))
         await retry(attempts=3)(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 2)
+        self.assertEqual(mock.await_args_list, [call()] * 2)
 
     async def test_swallow_single_exception(self):
         mock = CoroMock(side_effect=(KeyError, None))
         await retry(attempts=3, swallow=KeyError)(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 2)
+        self.assertEqual(mock.await_args_list, [call()] * 2)
 
         mock = CoroMock(side_effect=(KeyError, IndexError, None))
         with self.assertRaises(IndexError):
             await retry(attempts=3, swallow=KeyError)(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 2)
+        self.assertEqual(mock.await_args_list, [call()] * 2)
 
     async def test_swallow_multiple_exceptions(self):
         mock = CoroMock(side_effect=(KeyError, IndexError, None))
         await retry(attempts=3, swallow=(KeyError, IndexError))(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
 
         mock = CoroMock(side_effect=(KeyError, IndexError, ZeroDivisionError))
         with self.assertRaises(ZeroDivisionError):
             await retry(attempts=3, swallow=(KeyError, IndexError))(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
 
     async def test_swallow_list_exceptions(self):
         mock = CoroMock(side_effect=(KeyError, None))
         await retry(attempts=3, swallow=[ValueError, KeyError])(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 2)
+        self.assertEqual(mock.await_args_list, [call()] * 2)
 
     # Until
 
@@ -168,7 +168,7 @@ class TestAsyncRetry(asynctest.TestCase):
         res = await retry(until=until, attempts=3)(mock)()
 
         self.assertEqual(res, sentinel.res)
-        self.assertEqual(mock.mock_calls, [call()])
+        self.assertEqual(mock.await_args_list, [call()])
 
         self.assertEqual(until.mock_calls, [
             call(sentinel.res)
@@ -181,7 +181,7 @@ class TestAsyncRetry(asynctest.TestCase):
         res = await retry(until=until, attempts=3)(mock)()
 
         self.assertEqual(res, sentinel.b)
-        self.assertEqual(mock.mock_calls, [call()] * 2)
+        self.assertEqual(mock.await_args_list, [call()] * 2)
 
         self.assertEqual(until.mock_calls, [
             call(sentinel.a),
@@ -195,7 +195,7 @@ class TestAsyncRetry(asynctest.TestCase):
         res = await retry(until=until, attempts=3)(mock)()
 
         self.assertEqual(res, sentinel.c)
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
 
         self.assertEqual(until.mock_calls, [
             call(sentinel.a),
@@ -209,7 +209,7 @@ class TestAsyncRetry(asynctest.TestCase):
         mock = CoroMock(side_effect=(sentinel.a, sentinel.b, sentinel.c))
         await retry(until=until, attempts=3)(mock)()
 
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
 
         self.assertEqual(until.mock_calls, [
             call(sentinel.a),
@@ -272,7 +272,7 @@ class TestAsyncRetry(asynctest.TestCase):
         mock = CoroMock(side_effect=(sentinel.a, sentinel.b, sentinel.c))
 
         res = await retry(until=until, attempts=3, logger=logger)(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 2)
+        self.assertEqual(mock.await_args_list, [call()] * 2)
         self.assertEqual(res, sentinel.b)
 
         self.assertEqual(logger.mock_calls, [
@@ -285,7 +285,7 @@ class TestAsyncRetry(asynctest.TestCase):
         mock = CoroMock(side_effect=(sentinel.a, sentinel.b, sentinel.c))
 
         res = await retry(until=until, attempts=3, logger=logger)(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
         self.assertEqual(res, sentinel.c)
 
         self.assertEqual(logger.mock_calls, [
@@ -299,7 +299,7 @@ class TestAsyncRetry(asynctest.TestCase):
         mock = CoroMock(side_effect=(sentinel.a, sentinel.b, sentinel.c))
 
         res = await retry(until=until, attempts=3, logger=logger)(mock)()
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
         self.assertEqual(res, sentinel.c)
 
         self.assertEqual(logger.mock_calls, [
@@ -313,14 +313,14 @@ class TestAsyncRetry(asynctest.TestCase):
     async def test_timeout_without_delay(self):
         mock = CoroMock()
         await retry(timeout=0.01)(mock)()
-        self.assertEqual(mock.mock_calls, [call()])
+        self.assertEqual(mock.await_args_list, [call()])
 
     async def test_timeout_with_expected_delay(self):
         mock = CoroMock(side_effect=partial(asyncio.sleep, 0.01))
 
         await retry(timeout=0.03)(mock)()
 
-        self.assertEqual(mock.mock_calls, [call()])
+        self.assertEqual(mock.await_args_list, [call()])
 
     async def test_timeout_with_unexpected_delay(self):
         mock = CoroMock(side_effect=partial(asyncio.sleep, 0.03))
@@ -328,7 +328,7 @@ class TestAsyncRetry(asynctest.TestCase):
         with self.assertRaises(CancelledError):
             await retry(timeout=0.01)(mock)()
 
-        self.assertEqual(mock.mock_calls, [call()])
+        self.assertEqual(mock.await_args_list, [call()])
 
     async def test_timeout_with_errors(self):
         mock = CoroMock(side_effect=Exception)
@@ -343,7 +343,7 @@ class TestAsyncRetry(asynctest.TestCase):
 
         res = await retry(timeout=0.01)(mock)()
 
-        self.assertEqual(mock.mock_calls, [call()] * 2)
+        self.assertEqual(mock.await_args_list, [call()] * 2)
         self.assertEqual(res, sentinel.res)
 
     async def test_timeout_with_error_before_end(self):
@@ -351,7 +351,7 @@ class TestAsyncRetry(asynctest.TestCase):
 
         res = await retry(timeout=0.01)(mock)()
 
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
         self.assertEqual(res, sentinel.res)
 
     async def test_do_not_swallow_timeout_error(self):
@@ -368,7 +368,7 @@ class TestAsyncRetry(asynctest.TestCase):
         with self.assertRaises(ZeroDivisionError):
             await retry(attempts=3, timeout=1.0)(mock)()
 
-        self.assertEqual(mock.mock_calls, [call()] * 3)
+        self.assertEqual(mock.await_args_list, [call()] * 3)
 
     async def test_attempts_with_exceeded_timeout(self):
         async def side_effect():
