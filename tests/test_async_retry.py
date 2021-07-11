@@ -1,13 +1,14 @@
 import asyncio
 import sys
 from functools import partial
-from unittest.mock import Mock, call, patch, sentinel
+from unittest.mock import Mock, call, sentinel
 
 if sys.version_info >= (3, 8):
     from unittest import IsolatedAsyncioTestCase as TestCase
-    from unittest.mock import AsyncMock
+    from unittest.mock import AsyncMock, patch
 else:
     from asynctest import TestCase
+    from asynctest.mock import patch
     from asynctest.mock import CoroutineMock as AsyncMock
 
 from rtry import CancelledError, retry
