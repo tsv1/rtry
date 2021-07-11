@@ -1,9 +1,13 @@
 import asyncio
 import signal
+import sys
 from asyncio import sleep
+from unittest.mock import Mock, call
 
-import asynctest
-from asynctest.mock import Mock, call
+if sys.version_info >= (3, 8):
+    from unittest import IsolatedAsyncioTestCase as TestCase
+else:
+    from asynctest import TestCase
 
 from rtry import CancelledError, timeout
 from rtry.types import AsyncTimeoutProxy
@@ -11,7 +15,7 @@ from rtry.types import AsyncTimeoutProxy
 from ._ignore_exception import ignore_exception
 
 
-class TestAsyncTimeoutContext(asynctest.TestCase):
+class TestAsyncTimeoutContext(TestCase):
     async def test_no_timeout(self):
         mock = Mock()
         async with timeout(0):
@@ -328,14 +332,14 @@ class TestAsyncTimeoutContext(asynctest.TestCase):
     async def test_timeout_with_cancelled_task(self):
         with self.assertRaises(asyncio.CancelledError):
             async with timeout(0.01):
-                task = self.loop.create_task(sleep(0.02))
+                task = asyncio.get_event_loop().create_task(sleep(0.02))
                 task.cancel()
                 await task
 
     async def test_silent_timeout_with_cancelled_task(self):
         with self.assertRaises(asyncio.CancelledError):
             async with timeout(0.01, exception=None):
-                task = self.loop.create_task(sleep(0.02))
+                task = asyncio.get_event_loop().create_task(sleep(0.02))
                 task.cancel()
                 await task
 
