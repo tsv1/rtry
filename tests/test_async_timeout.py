@@ -1,15 +1,20 @@
 import asyncio
 import signal
+import sys
 from asyncio import sleep
+from unittest.mock import Mock, call, sentinel
 
-import asynctest
-from asynctest.mock import CoroutineMock as CoroMock
-from asynctest.mock import Mock, call, sentinel
+if sys.version_info >= (3, 8):
+    from unittest import IsolatedAsyncioTestCase as TestCase
+    from unittest.mock import AsyncMock
+else:
+    from asynctest import TestCase
+    from asynctest.mock import CoroutineMock as AsyncMock
 
 from rtry import CancelledError, timeout
 
 
-class TestAsyncTimeout(asynctest.TestCase):
+class TestAsyncTimeout(TestCase):
     async def test_wraps(self):
         async def fn():
             pass
@@ -44,6 +49,7 @@ class TestAsyncTimeout(asynctest.TestCase):
 
     async def test_silent_timeout_with_unexpected_delay(self):
         mock = Mock()
+
         @timeout(0.01, exception=None)
         async def fn():
             mock(1)
@@ -63,7 +69,7 @@ class TestAsyncTimeout(asynctest.TestCase):
             await outer()
 
     async def test_forwards_args_and_result(self):
-        mock = CoroMock(return_value=sentinel.res)
+        mock = AsyncMock(return_value=sentinel.res)
         res = await timeout(0.01)(mock)(sentinel.a, sentinel.b, key1=sentinel.val, key2=None)
         self.assertEqual(mock.await_args_list, [
             call(sentinel.a, sentinel.b, key1=sentinel.val, key2=None)
@@ -124,6 +130,7 @@ class TestAsyncTimeout(asynctest.TestCase):
         @timeout(0.05)
         async def outer():
             mock(1)
+
             @timeout(0.01)
             async def inner():
                 mock(2)
@@ -143,6 +150,7 @@ class TestAsyncTimeout(asynctest.TestCase):
         @timeout(0.01)
         async def outer():
             mock(1)
+
             @timeout(0.05)
             async def inner():
                 mock(2)
@@ -162,6 +170,7 @@ class TestAsyncTimeout(asynctest.TestCase):
         @timeout(0.03)
         async def outer():
             mock(1)
+
             @timeout(0.07)
             async def inner():
                 mock(2)
@@ -183,6 +192,7 @@ class TestAsyncTimeout(asynctest.TestCase):
         @timeout(0.05)
         async def outer():
             mock(1)
+
             @timeout(0.01, exception=None)
             async def inner():
                 mock(2)
@@ -204,6 +214,7 @@ class TestAsyncTimeout(asynctest.TestCase):
         @timeout(0.01)
         async def outer():
             mock(1)
+
             @timeout(0.01)
             async def inner():
                 mock(2)
@@ -264,7 +275,7 @@ class TestAsyncTimeout(asynctest.TestCase):
             await sleep(0.02)
 
         with self.assertRaises(asyncio.CancelledError):
-            task = self.loop.create_task(fn())
+            task = asyncio.get_event_loop().create_task(fn())
             task.cancel()
             await task
 
@@ -274,6 +285,6 @@ class TestAsyncTimeout(asynctest.TestCase):
             await sleep(0.02)
 
         with self.assertRaises(asyncio.CancelledError):
-            task = self.loop.create_task(fn())
+            task = asyncio.get_event_loop().create_task(fn())
             task.cancel()
             await task

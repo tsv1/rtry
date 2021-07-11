@@ -1,10 +1,9 @@
 # rtry
 
-[![License](https://img.shields.io/github/license/nikitanovosibirsk/rtry.svg)](https://github.com/nikitanovosibirsk/rtry)
-[![Drone](https://cloud.drone.io/api/badges/nikitanovosibirsk/rtry/status.svg)](https://cloud.drone.io/nikitanovosibirsk/rtry)
-[![Codecov](https://img.shields.io/codecov/c/github/nikitanovosibirsk/rtry/master.svg)](https://codecov.io/gh/nikitanovosibirsk/rtry)
-[![PyPI](https://img.shields.io/pypi/v/rtry.svg)](https://pypi.python.org/pypi/rtry/)
-[![Python Version](https://img.shields.io/pypi/pyversions/rtry.svg)](https://pypi.python.org/pypi/rtry/)
+[![Codecov](https://img.shields.io/codecov/c/github/nikitanovosibirsk/rtry/master.svg?style=flat-square)](https://codecov.io/gh/nikitanovosibirsk/rtry)
+[![PyPI](https://img.shields.io/pypi/v/rtry.svg?style=flat-square)](https://pypi.python.org/pypi/rtry/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/rtry?style=flat-square)](https://pypi.python.org/pypi/rtry/)
+[![Python Version](https://img.shields.io/pypi/pyversions/rtry.svg?style=flat-square)](https://pypi.python.org/pypi/rtry/)
 
 ## Installation
 
