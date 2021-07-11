@@ -41,6 +41,7 @@ class TestTimeout(unittest.TestCase):
 
     def test_silent_timeout_with_unexpected_delay(self):
         mock = Mock()
+
         @timeout(0.01, exception=None)
         def fn():
             mock(1)
@@ -137,6 +138,7 @@ class TestTimeout(unittest.TestCase):
         @timeout(0.05)
         def outer():
             mock(1)
+
             @timeout(0.01)
             def inner():
                 mock(2)
@@ -156,6 +158,7 @@ class TestTimeout(unittest.TestCase):
         @timeout(0.01)
         def outer():
             mock(1)
+
             @timeout(0.05)
             def inner():
                 mock(2)
@@ -175,6 +178,7 @@ class TestTimeout(unittest.TestCase):
         @timeout(0.03)
         def outer():
             mock(1)
+
             @timeout(0.07)
             def inner():
                 mock(2)
@@ -196,6 +200,7 @@ class TestTimeout(unittest.TestCase):
         @timeout(0.05)
         def outer():
             mock(1)
+
             @timeout(0.01, exception=None)
             def inner():
                 mock(2)
@@ -217,6 +222,7 @@ class TestTimeout(unittest.TestCase):
         @timeout(0.01)
         def outer():
             mock(1)
+
             @timeout(0.01)
             def inner():
                 mock(2)

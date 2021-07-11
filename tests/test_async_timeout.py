@@ -44,6 +44,7 @@ class TestAsyncTimeout(asynctest.TestCase):
 
     async def test_silent_timeout_with_unexpected_delay(self):
         mock = Mock()
+
         @timeout(0.01, exception=None)
         async def fn():
             mock(1)
@@ -124,6 +125,7 @@ class TestAsyncTimeout(asynctest.TestCase):
         @timeout(0.05)
         async def outer():
             mock(1)
+
             @timeout(0.01)
             async def inner():
                 mock(2)
@@ -143,6 +145,7 @@ class TestAsyncTimeout(asynctest.TestCase):
         @timeout(0.01)
         async def outer():
             mock(1)
+
             @timeout(0.05)
             async def inner():
                 mock(2)
@@ -162,6 +165,7 @@ class TestAsyncTimeout(asynctest.TestCase):
         @timeout(0.03)
         async def outer():
             mock(1)
+
             @timeout(0.07)
             async def inner():
                 mock(2)
@@ -183,6 +187,7 @@ class TestAsyncTimeout(asynctest.TestCase):
         @timeout(0.05)
         async def outer():
             mock(1)
+
             @timeout(0.01, exception=None)
             async def inner():
                 mock(2)
@@ -204,6 +209,7 @@ class TestAsyncTimeout(asynctest.TestCase):
         @timeout(0.01)
         async def outer():
             mock(1)
+
             @timeout(0.01)
             async def inner():
                 mock(2)

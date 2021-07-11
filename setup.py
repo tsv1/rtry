@@ -23,6 +23,7 @@ setup(
     url="https://github.com/nikitanovosibirsk/rtry",
     license="MIT",
     packages=find_packages(exclude=("tests",)),
+    package_data={"rtry": ["py.typed"]},
     install_requires=find_required(),
     tests_require=find_dev_required(),
     classifiers=[
@@ -33,5 +34,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
+        "Topic :: Software Development",
+        "Typing :: Typed",
     ],
 )
