@@ -1,6 +1,7 @@
 import asyncio
 import sched
 import signal
+import sys
 from sched import Event
 from time import monotonic, sleep
 from types import FrameType
@@ -86,7 +87,11 @@ class AsyncScheduler(AbstractScheduler):
     def new(self, seconds: TimeoutValue, handler: Callable[[], None]) -> AsyncEvent:
         when = self._loop.time() + seconds
         action = self._loop.call_at(when, handler)
-        return AsyncEvent(time=when, priority=0, action=action.cancel, argument=(), kwargs={})
+        if sys.version_info >= (3, 10):
+            return AsyncEvent(time=when, priority=0, sequence=0, action=action.cancel,
+                              argument=(), kwargs={})
+        else:
+            return AsyncEvent(time=when, priority=0, action=action.cancel, argument=(), kwargs={})
 
     def cancel(self, event: Union[Event, None]) -> None:
         if event is not None:
