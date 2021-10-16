@@ -88,10 +88,11 @@ class AsyncScheduler(AbstractScheduler):
         when = self._loop.time() + seconds
         action = self._loop.call_at(when, handler)
         if sys.version_info >= (3, 10):
-            return AsyncEvent(time=when, priority=0, sequence=0, action=action.cancel,
-                              argument=(), kwargs={})
+            event = AsyncEvent(time=when, priority=0, sequence=0, action=action.cancel,
+                               argument=(), kwargs={})  # type: ignore
         else:
-            return AsyncEvent(time=when, priority=0, action=action.cancel, argument=(), kwargs={})
+            event = AsyncEvent(time=when, priority=0, action=action.cancel, argument=(), kwargs={})
+        return event
 
     def cancel(self, event: Union[Event, None]) -> None:
         if event is not None:
