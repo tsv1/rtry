@@ -9,6 +9,11 @@ from typing import Any, Callable, Union
 
 from ._types import DelayValue, SignalHandler, TimeoutValue
 
+try:
+    ITIMER_REAL = signal.ITIMER_REAL
+except AttributeError:
+    ITIMER_REAL = 0
+
 __all__ = ("AbstractScheduler", "Scheduler", "AsyncScheduler",
            "Event", "AsyncEvent",)
 
@@ -28,7 +33,7 @@ class Scheduler(AbstractScheduler):
     def __init__(self,
                  timefunc: Callable[[], TimeoutValue] = monotonic,
                  delayfunc: Callable[[DelayValue], Any] = sleep,
-                 itimer: int = signal.ITIMER_REAL) -> None:
+                 itimer: int = ITIMER_REAL) -> None:
         self._timefunc = timefunc
         self._delayfunc = delayfunc
         self._itimer = itimer
