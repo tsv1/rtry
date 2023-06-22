@@ -1,6 +1,6 @@
 # rtry
 
-[![Codecov](https://img.shields.io/codecov/c/github/nikitanovosibirsk/rtry/master.svg?style=flat-square)](https://codecov.io/gh/nikitanovosibirsk/rtry)
+[![Codecov](https://img.shields.io/codecov/c/github/tsv1/rtry/master.svg?style=flat-square)](https://codecov.io/gh/tsv1/rtry)
 [![PyPI](https://img.shields.io/pypi/v/rtry.svg?style=flat-square)](https://pypi.python.org/pypi/rtry/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/rtry?style=flat-square)](https://pypi.python.org/pypi/rtry/)
 [![Python Version](https://img.shields.io/pypi/pyversions/rtry.svg?style=flat-square)](https://pypi.python.org/pypi/rtry/)
