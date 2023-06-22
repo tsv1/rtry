@@ -7,7 +7,7 @@ from unittest.mock import Mock, call
 if sys.version_info >= (3, 8):
     from unittest import IsolatedAsyncioTestCase as TestCase
 else:
-    from unittest import TestCase
+    from asynctest import TestCase
 
 from rtry import CancelledError, timeout
 from rtry.types import AsyncTimeoutProxy
