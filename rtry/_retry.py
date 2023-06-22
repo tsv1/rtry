@@ -59,7 +59,7 @@ class Retry:
             else:
                 if self._until is None:
                     return result
-                elif not(self._until(result)):
+                elif not self._until(result):
                     return result
                 exception = None
             retried += 1
@@ -68,7 +68,7 @@ class Retry:
             if self._delay is not None:
                 delay = self._delay
                 if hasattr(self._delay, "__call__"):
-                    delay = self._delay(retried)  # type: ignore
+                    delay = self._delay(retried)
                 time.sleep(delay)  # type: ignore
             else:
                 time.sleep(0)
@@ -91,7 +91,7 @@ class Retry:
             else:
                 if self._until is None:
                     return result
-                elif not(self._until(result)):
+                elif not self._until(result):
                     return result
                 exception = None
             retried += 1
@@ -100,7 +100,7 @@ class Retry:
             if self._delay is not None:
                 delay = self._delay
                 if hasattr(self._delay, "__call__"):
-                    delay = self._delay(retried)  # type: ignore
+                    delay = self._delay(retried)
                 await asyncio.sleep(delay)  # type: ignore
             else:
                 await asyncio.sleep(0)
