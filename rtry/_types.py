@@ -1,4 +1,4 @@
-from signal import Handlers, Signals
+from signal import Handlers
 from types import FrameType
 from typing import Any, Callable, Tuple, Type, Union
 
@@ -15,4 +15,4 @@ ExceptionType = Type[BaseException]
 LoggerCallable = Callable[[AttemptValue, Any, AnyCallable], Any]
 UntilCallable = Callable[[Any], bool]
 SwallowException = Union[Tuple[ExceptionType, ...], ExceptionType]
-SignalHandler = Union[Callable[[Signals, FrameType], None], int, Handlers, None]
+SignalHandler = Union[Callable[[int, Union[FrameType, None]], Any], int, Handlers, None]

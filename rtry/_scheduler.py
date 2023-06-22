@@ -54,7 +54,7 @@ class Scheduler(AbstractScheduler):
         priority = -len(self._scheduler.queue)
         event = self._scheduler.enter(seconds, priority, handler)
 
-        signal.signal(signal.SIGALRM, self)
+        signal.signal(signal.SIGALRM, self)  # type: ignore
         signal.setitimer(self._itimer, self._next_event())
 
         return event
