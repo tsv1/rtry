@@ -1,5 +1,4 @@
 import asyncio
-import sys
 from functools import wraps
 from types import TracebackType
 from typing import Any, Optional, Type, Union
@@ -89,10 +88,7 @@ class Timeout:
         return exc_val is None
 
     async def __aenter__(self) -> AsyncTimeoutProxy:
-        if sys.version_info >= (3, 7):  # pragma: no cover
-            task = asyncio.current_task()
-        else:  # pragma: no cover
-            task = asyncio.Task.current_task()
+        task = asyncio.current_task()
 
         def async_handler(task: "Optional[asyncio.Task[None]]" = task) -> None:
             self._async_scheduler.cancel(self._event)
