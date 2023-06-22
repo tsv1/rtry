@@ -13,7 +13,7 @@ def find_dev_required():
 
 setup(
     name="rtry",
-    version="1.4.1",
+    version="1.5.0",
     description="The easiest way to retry operations",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
