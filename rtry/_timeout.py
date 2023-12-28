@@ -1,7 +1,7 @@
 import asyncio
 from functools import wraps
 from types import TracebackType
-from typing import Any, Optional, Type, Union
+from typing import Any, Optional, Type, Union, cast
 
 from ._errors import CancelledError
 from ._scheduler import AsyncEvent, AsyncScheduler, Event, Scheduler
@@ -48,8 +48,8 @@ class Timeout:
         self._orig_exception = exception or CancelledError
         self._exception = type("_CancelledError", (self._orig_exception,), {})
         self._silent = exception is None
-        self._event = None  # type: Union[Event, None]
-        self._raised = None  # type: Union[Event, None]
+        self._event: Union[Event, None] = None
+        self._raised: Union[Event, None] = None
 
     @property
     def seconds(self) -> TimeoutValue:
@@ -72,7 +72,7 @@ class Timeout:
         def sync_handler() -> None:
             self._scheduler.cancel(self._event)
             self._raised = self._exception()
-            raise self._raised  # type: ignore
+            raise cast(BaseException, self._raised)
 
         if self._seconds > 0:
             self._event = self._scheduler.new(self._seconds, sync_handler)
@@ -92,7 +92,7 @@ class Timeout:
 
         def async_handler(task: "Optional[asyncio.Task[None]]" = task) -> None:
             self._async_scheduler.cancel(self._event)
-            if task:  # pragma: no branch
+            if task:
                 self._raised = self._exception()
                 task.cancel()
 
@@ -110,7 +110,7 @@ class Timeout:
            isinstance(self._raised, self._exception):
             if self._silent:
                 return True
-            raise self._raised  # type: ignore
+            raise cast(BaseException, self._raised)
 
         return exc_val is None
 

@@ -1,15 +1,8 @@
 import asyncio
 import signal
-import sys
 from asyncio import sleep
-from unittest.mock import Mock, call, sentinel
-
-if sys.version_info >= (3, 8):
-    from unittest import IsolatedAsyncioTestCase as TestCase
-    from unittest.mock import AsyncMock
-else:
-    from asynctest import TestCase
-    from asynctest.mock import CoroutineMock as AsyncMock
+from unittest import IsolatedAsyncioTestCase as TestCase
+from unittest.mock import AsyncMock, Mock, call, sentinel
 
 from rtry import CancelledError, timeout
 

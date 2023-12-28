@@ -1,7 +1,7 @@
 import unittest
 from functools import partial
 from time import sleep
-from unittest.mock import MagicMock, call, patch, sentinel
+from unittest.mock import MagicMock, Mock, call, patch, sentinel
 
 from rtry import CancelledError, retry
 
@@ -231,7 +231,7 @@ class TestRetry(unittest.TestCase):
     # Logger
 
     def test_custom_logger_without_errors(self):
-        logger = MagicMock()
+        logger = Mock()
 
         mock = MagicMock()
         retry(attempts=3, logger=logger)(mock)()
@@ -239,7 +239,7 @@ class TestRetry(unittest.TestCase):
         logger.assert_not_called()
 
     def test_logger_with_error_after_start(self):
-        logger = MagicMock()
+        logger = Mock()
 
         exception = Exception()
         mock = MagicMock(side_effect=(exception, None))
@@ -248,7 +248,7 @@ class TestRetry(unittest.TestCase):
         logger.assert_called_once_with(1, exception, mock)
 
     def test_logger_with_error_before_end(self):
-        logger = MagicMock()
+        logger = Mock()
 
         exception1, exception2 = Exception(), Exception()
         mock = MagicMock(side_effect=(exception1, exception2, None))
@@ -261,7 +261,7 @@ class TestRetry(unittest.TestCase):
         self.assertEqual(logger.call_count, 2)
 
     def test_logger_with_errors(self):
-        logger = MagicMock()
+        logger = Mock()
 
         exception = Exception()
         mock = MagicMock(side_effect=exception)
@@ -278,7 +278,7 @@ class TestRetry(unittest.TestCase):
     # Logger with Until
 
     def test_logger_with_until_true_after_start(self):
-        logger = MagicMock()
+        logger = Mock()
         until = MagicMock(side_effect=(True, False, False))
         mock = MagicMock(side_effect=(sentinel.a, sentinel.b, sentinel.c))
 
@@ -289,7 +289,7 @@ class TestRetry(unittest.TestCase):
         logger.assert_called_once_with(1, sentinel.a, mock)
 
     def test_logger_with_until_true_before_end(self):
-        logger = MagicMock()
+        logger = Mock()
         until = MagicMock(side_effect=(True, True, False))
         mock = MagicMock(side_effect=(sentinel.a, sentinel.b, sentinel.c))
 
@@ -304,7 +304,7 @@ class TestRetry(unittest.TestCase):
         self.assertEqual(logger.call_count, 2)
 
     def test_logger_with_until_true(self):
-        logger = MagicMock()
+        logger = Mock()
         until = MagicMock(side_effect=(True, True, True))
         mock = MagicMock(side_effect=(sentinel.a, sentinel.b, sentinel.c))
 

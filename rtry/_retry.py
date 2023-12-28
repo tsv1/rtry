@@ -1,7 +1,7 @@
 import asyncio
 import time
 from functools import wraps
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union, cast
 
 from ._errors import CancelledError
 from ._timeout import Timeout
@@ -42,7 +42,7 @@ class Retry:
         if isinstance(self._swallow, list):
             self._swallow = tuple(self._swallow)
         self._logger = logger
-        self._fn = None  # type: Union[AnyCallable, None]
+        self._fn: Union[AnyCallable, None] = None
 
     def _sync_wrapped(self, *args: Any, **kwargs: Any) -> Any:
         assert self._fn is not None
@@ -63,15 +63,15 @@ class Retry:
                     return result
                 exception = None
             retried += 1
-            if hasattr(self._logger, "__call__"):
-                self._logger(retried, exception or result, self._fn)  # type: ignore
+            if self._logger and hasattr(self._logger, "__call__"):
+                self._logger(retried, exception or result, self._fn)
             if self._delay is not None:
                 delay = self._delay
                 if hasattr(self._delay, "__call__"):
                     delay = self._delay(retried)
-                time.sleep(delay)  # type: ignore
+                time.sleep(cast(float, delay))
             else:
-                time.sleep(0)
+                time.sleep(0.0)
         if exception:
             raise exception
         return result
@@ -95,15 +95,15 @@ class Retry:
                     return result
                 exception = None
             retried += 1
-            if hasattr(self._logger, "__call__"):
-                self._logger(retried, exception or result, self._fn)  # type: ignore
+            if self._logger and hasattr(self._logger, "__call__"):
+                self._logger(retried, exception or result, self._fn)
             if self._delay is not None:
                 delay = self._delay
                 if hasattr(self._delay, "__call__"):
                     delay = self._delay(retried)
-                await asyncio.sleep(delay)  # type: ignore
+                await asyncio.sleep(cast(float, delay))
             else:
-                await asyncio.sleep(0)
+                await asyncio.sleep(0.0)
         if exception:
             raise exception
         return result
@@ -127,7 +127,7 @@ class Retry:
         return self._timeout_factory(self._timeout)(wrapped)
 
     def __repr__(self) -> str:
-        args = []  # type: List[str]
+        args: List[str] = []
         if self._until is not None:
             args += ["until={}".format(repr(self._until))]
         if self._attempts is not None:
