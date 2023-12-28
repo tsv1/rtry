@@ -2,6 +2,7 @@ import asyncio
 import sched
 import signal
 import sys
+from abc import ABC, abstractmethod
 from sched import Event
 from time import monotonic, sleep
 from types import FrameType
@@ -18,15 +19,18 @@ __all__ = ("AbstractScheduler", "Scheduler", "AsyncScheduler",
            "Event", "AsyncEvent",)
 
 
-class AbstractScheduler:
+class AbstractScheduler(ABC):
+    @abstractmethod
     def get_remaining(self, event: Event) -> TimeoutValue:
-        raise NotImplementedError()  # pragma: no cover
+        pass
 
+    @abstractmethod
     def new(self, seconds: TimeoutValue, handler: Callable[[], None]) -> Event:
-        raise NotImplementedError()  # pragma: no cover
+        pass
 
+    @abstractmethod
     def cancel(self, event: Union[Event, None]) -> None:
-        raise NotImplementedError()  # pragma: no cover
+        pass
 
 
 class Scheduler(AbstractScheduler):
@@ -38,7 +42,7 @@ class Scheduler(AbstractScheduler):
         self._delayfunc = delayfunc
         self._itimer = itimer
         self._scheduler = sched.scheduler(timefunc, delayfunc)
-        self._orig_handler = None  # type: Union[SignalHandler, None]
+        self._orig_handler: Union[SignalHandler, None] = None
 
     def get_remaining(self, event: Event) -> TimeoutValue:
         return max(0, event.time - self._timefunc())
@@ -99,9 +103,10 @@ class AsyncScheduler(AbstractScheduler):
             "argument": (),
             "kwargs": {},
         }
-        if sys.version_info >= (3, 10):  # pragma: no cover
+        if sys.version_info >= (3, 10):
             args["sequence"] = 0
-        return AsyncEvent(**args)  # type: ignore
+        event = AsyncEvent(**args)  # type: ignore
+        return event
 
     def cancel(self, event: Union[Event, None]) -> None:
         if event is not None:
