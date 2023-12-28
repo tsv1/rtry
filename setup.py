@@ -19,7 +19,7 @@ setup(
     long_description_content_type="text/markdown",
     author="Nikita Tsvetkov",
     author_email="tsv1@fastmail.com",
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     url="https://github.com/tsv1/rtry",
     license="MIT",
     packages=find_packages(exclude=["tests", "tests.*"]),
@@ -32,6 +32,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Typing :: Typed",
     ],
 )
